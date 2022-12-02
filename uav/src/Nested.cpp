@@ -51,15 +51,15 @@ Nested::Nested(const LayoutPosition *position, string name): ControlLaw(position
     k2 = new DoubleSpinBox(reglages_groupbox->LastRowLastCol(), "k2:", -5000, 5000, 0.01, 3);
     k3 = new DoubleSpinBox(reglages_groupbox->NewRow(), "k3:", -5000, 5000, 0.01, 3);
     k4 = new DoubleSpinBox(reglages_groupbox->LastRowLastCol(), "k4:", -5000, 5000, 0.01, 3);
-    k5 = new DoubleSpinBox(reglages_groupbox->NewRow(), "k5:", -5000, 5000, 0.01, 3);
-    k6 = new DoubleSpinBox(reglages_groupbox->LastRowLastCol(), "k6:", -5000, 5000, 0.01, 3);
-    k7 = new DoubleSpinBox(reglages_groupbox->LastRowLastCol(), "k7:", -5000, 5000, 0.01, 3);
-    k8 = new DoubleSpinBox(reglages_groupbox->LastRowLastCol(), "k8:", -5000, 5000, 0.01, 3);
-    k9 = new DoubleSpinBox(reglages_groupbox->NewRow(), "k9:", -5000, 5000, 0.01, 3);
-    k10 = new DoubleSpinBox(reglages_groupbox->LastRowLastCol(), "k10:", -5000, 5000, 0.01, 3);
-    k11 = new DoubleSpinBox(reglages_groupbox->LastRowLastCol(), "k11:", -5000, 5000, 0.01, 3);
-    k12 = new DoubleSpinBox(reglages_groupbox->LastRowLastCol(), "k12:", -5000, 5000, 0.01, 3);
-    sat = new DoubleSpinBox(reglages_groupbox->NewRow(), "sat:", 0, 1, 0.1);
+    a1 = new DoubleSpinBox(reglages_groupbox->NewRow(), "a1:", -5000, 5000, 0.01, 3);
+    b1 = new DoubleSpinBox(reglages_groupbox->LastRowLastCol(), "b1:", -5000, 5000, 0.01, 3);
+    c1 = new DoubleSpinBox(reglages_groupbox->LastRowLastCol(), "c1:", -5000, 5000, 0.01, 3);
+    d1 = new DoubleSpinBox(reglages_groupbox->LastRowLastCol(), "d1:", -5000, 5000, 0.01, 3);
+    a2 = new DoubleSpinBox(reglages_groupbox->NewRow(), "a2:", -5000, 5000, 0.01, 3);
+    b2 = new DoubleSpinBox(reglages_groupbox->LastRowLastCol(), "b2:", -5000, 5000, 0.01, 3);
+    c2 = new DoubleSpinBox(reglages_groupbox->LastRowLastCol(), "c2:", -5000, 5000, 0.01, 3);
+    d2 = new DoubleSpinBox(reglages_groupbox->LastRowLastCol(), "d2:", -5000, 5000, 0.01, 3);
+    //sat = new DoubleSpinBox(reglages_groupbox->NewRow(), "sat:", 0, 1, 0.1);
     
     
     //GroupBox *c_fisicas = new GroupBox(position->NewRow(), "Constantes Fisicas");
@@ -93,7 +93,7 @@ Nested::Nested(const LayoutPosition *position, string name): ControlLaw(position
 
 Nested::~Nested(void) {}
 
-void Linear::Reset(void) {
+void Nested::Reset(void) {
 //    pimpl_->i = 0;
 //    pimpl_->first_update = true;
 }
@@ -170,12 +170,6 @@ void Nested::UpdateFrom(const io_data *data) {
     
     input->ReleaseMutex();
     
-    Eigen::Vector4d X1(x, xp, th, thp);
-    Eigen::Vector4d K1(k5->Value(), k6->Value(), k7->Value(), k8->Value());
-    
-    Eigen::Vector4d X2(y, yp, phi, phip);
-    Eigen::Vector4d K2(k9->Value(), k10->Value(), k11->Value(), k12->Value());
-    
     Eigen::Matrix3d W = MatrixW(phi, th);
     Eigen::Matrix3d Wi = MatrixWi(phi, th);
     Eigen::Matrix3d Wp = MatrixWp(phi, th, phip, thp);
@@ -185,9 +179,9 @@ void Nested::UpdateFrom(const io_data *data) {
     
     Eigen::Vector3d etap = Wi*w;
     
-    double tau_th_t = K1.transpose()*X1;
+    double tau_th_t = -Sat(thp + Sat(th + thp + Sat(2*th + thp - (1/g->Value())*xp + Sat(3*th + thp - (3/g->Value())*xp -(1/g->Value())*x ,d1->Value()) ,c1->Value()) ,b1->Value()) ,a1->Value());
     
-    double tau_phi_t = K2.transpose()*X2;
+    double tau_phi_t = -Sat(phip + Sat(phi + phip + Sat(2*phi + phip - (1/g->Value())*yp + Sat(3*phi + phip - (3/g->Value())*yp -(1/g->Value())*y ,d2->Value()) ,c2->Value()) ,b2->Value()) ,a2->Value());;
     
     double tau_psi_t = -k3->Value()*psip - k4->Value()*psi;
     
@@ -199,7 +193,7 @@ void Nested::UpdateFrom(const io_data *data) {
     tau = J*W*(Wi*Wp*etap + Wi*Ji*CPO(W*etap)*J*W*etap + taub);
 
     
-    T = m->Value()*(k1->Value()*zp + k2->Value()*ze + g->Value());
+    T = (m->Value()*(k1->Value()*zp + k2->Value()*ze + g->Value()))/(cos(th)*cos(phi));
     
     tau_roll = (double)tau(0);
     
@@ -210,25 +204,25 @@ void Nested::UpdateFrom(const io_data *data) {
     Tr = (double)T;
     
 
-    if (tau_roll > sat->Value())
-        tau_roll = sat->Value();
-    if (tau_roll < -sat->Value())
-        tau_roll = -sat->Value();
-    
-    if (tau_pitch > sat->Value())
-        tau_pitch = sat->Value();
-    if (tau_pitch < -sat->Value())
-        tau_pitch = -sat->Value();
-    
-    if (tau_yaw > sat->Value())
-        tau_yaw = sat->Value();
-    if (tau_yaw < -sat->Value())
-        tau_yaw = -sat->Value();
-    
-    if (Tr > sat->Value())
-        Tr = sat->Value();
-    if (Tr < -sat->Value())
-        Tr = -sat->Value();
+//    if (tau_roll > sat->Value())
+//        tau_roll = sat->Value();
+//    if (tau_roll < -sat->Value())
+//        tau_roll = -sat->Value();
+//    
+//    if (tau_pitch > sat->Value())
+//        tau_pitch = sat->Value();
+//    if (tau_pitch < -sat->Value())
+//        tau_pitch = -sat->Value();
+//    
+//    if (tau_yaw > sat->Value())
+//        tau_yaw = sat->Value();
+//    if (tau_yaw < -sat->Value())
+//        tau_yaw = -sat->Value();
+//    
+//    if (Tr > sat->Value())
+//        Tr = sat->Value();
+//    if (Tr < -sat->Value())
+//        Tr = -sat->Value();
     
     state->GetMutex();
     state->SetValueNoMutex(0, 0, tau_roll);
@@ -310,6 +304,14 @@ Eigen::Matrix3d Nested::CPO(Eigen::Vector3d aux){
         -aux(1), aux(0), 0;
     
     return S;
+}
+
+float Nested::Sat(float value, float borne) {
+  if (value < -borne)
+    return -borne;
+  if (value > borne)
+    return borne;
+  return value;
 }
 
 

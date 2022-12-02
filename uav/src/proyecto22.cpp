@@ -13,6 +13,7 @@
 
 #include "proyecto22.h"
 #include "Linear.h"
+#include "Nested.h"
 #include <TargetController.h>
 #include <Uav.h>
 #include <GridLayout.h>
@@ -75,8 +76,15 @@ proyecto22::proyecto22(TargetController *controller): UavStateMachine(controller
     u_linear->UseDefaultPlot3(graphLawTab2->At(0, 2));
     u_linear->UseDefaultPlot4(graphLawTab2->At(1, 2));
     
+    u_nested = new Nested(setupLawTab3->At(0, 0), "u_nes");
+    u_nested->UseDefaultPlot(graphLawTab3->At(0, 0));
+    u_nested->UseDefaultPlot2(graphLawTab3->At(0, 1));
+    u_nested->UseDefaultPlot3(graphLawTab3->At(0, 2));
+    u_nested->UseDefaultPlot4(graphLawTab3->At(1, 2));
+    
 
     AddDeviceToControlLawLog(u_linear);
+    AddDeviceToControlLawLog(u_nested);
 
 
 }
@@ -100,7 +108,7 @@ void proyecto22::ComputeCustomTorques(Euler &torques) {
             
         case 2:
             Thread::Info("Sliding\n");
-            nested_sliding(torques);
+            sliding_ctrl(torques);
             break;
     }
     
@@ -202,13 +210,13 @@ void proyecto22::linear_ctrl(Euler &torques){
     AltitudeValues(z,zp);
     
     float ze = z - refAltitude;
+    //float zpe = zp;
     
     u_linear->SetValues(ze,zp,currentAngles.yaw,currentAngularSpeed.z,0,0,currentAngles.pitch,currentAngularSpeed.y,0,0,currentAngles.roll,currentAngularSpeed.x);
     
-    
     u_linear->Update(GetTime());
     
-    Thread::Info("%f \t %f \t %f \t %f \n",u_linear->Output(0),u_linear->Output(1),u_linear->Output(2), u_linear->Output(3));
+    Thread::Info("%f \t %f \t %f\n",currentAngles.yaw,currentAngularSpeed.z, u_linear->Output(2));
     
     torques.roll = u_linear->Output(0);
     torques.pitch = u_linear->Output(1);
@@ -241,13 +249,25 @@ void proyecto22::nested_ctrl(Euler &torques){
     
     AltitudeValues(z,zp);
     
+    float ze = z - refAltitude;
+    
+    u_nested->SetValues(ze,zp,currentAngles.yaw,currentAngularSpeed.z,0,0,currentAngles.pitch,currentAngularSpeed.y,0,0,currentAngles.roll,currentAngularSpeed.x);
+    
+    u_nested->Update(GetTime());
+    
+    Thread::Info("%f \t %f \t %f \t %f \n",u_nested->Output(0),u_nested->Output(1),u_nested->Output(2), u_nested->Output(3));
+    
+    torques.roll = u_nested->Output(0);
+    torques.pitch = u_nested->Output(1);
+    torques.yaw = u_nested->Output(2);
+    thrust = u_nested->Output(3);
     
     
 
 }
 
 
-void proyecto22::nested_sliding(Euler &torques){
+void proyecto22::sliding_ctrl(Euler &torques){
     const AhrsData *refOrientation = GetDefaultReferenceOrientation();
     Quaternion refQuaternion;
     Vector3Df refAngularRates;

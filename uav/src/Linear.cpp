@@ -61,18 +61,20 @@ Linear::Linear(const LayoutPosition *position, string name): ControlLaw(position
     k12 = new DoubleSpinBox(reglages_groupbox->LastRowLastCol(), "k12:", -5000, 5000, 0.01, 3);
     sat = new DoubleSpinBox(reglages_groupbox->NewRow(), "sat:", 0, 1, 0.1);
     
+    km = new DoubleSpinBox(reglages_groupbox->LastRowLastCol(), "km:", -10, 10, 0.001, 6);
+    
     
     //GroupBox *c_fisicas = new GroupBox(position->NewRow(), "Constantes Fisicas");
     
-    J11 = new DoubleSpinBox(reglages_groupbox->NewRow(),"J11",-2000,2000,0.001);
-    J22 = new DoubleSpinBox(reglages_groupbox->LastRowLastCol(),"J22",-2000,2000,0.001);
-    J33 = new DoubleSpinBox(reglages_groupbox->LastRowLastCol(),"J33",-2000,2000,0.001);
-    J12 = new DoubleSpinBox(reglages_groupbox->NewRow(),"J12",-2000,2000,0.001);
-    J13 = new DoubleSpinBox(reglages_groupbox->LastRowLastCol(),"J13",-2000,2000,0.001);
-    J23 = new DoubleSpinBox(reglages_groupbox->LastRowLastCol(),"J23",-2000,2000,0.001);
+    J11 = new DoubleSpinBox(reglages_groupbox->NewRow(),"J11",-2000,2000,0.001,6);
+    J22 = new DoubleSpinBox(reglages_groupbox->LastRowLastCol(),"J22",-2000,2000,0.001,6);
+    J33 = new DoubleSpinBox(reglages_groupbox->LastRowLastCol(),"J33",-2000,2000,0.001,6);
+    J12 = new DoubleSpinBox(reglages_groupbox->NewRow(),"J12",-2000,2000,0.001,6);
+    J13 = new DoubleSpinBox(reglages_groupbox->LastRowLastCol(),"J13",-2000,2000,0.001,6);
+    J23 = new DoubleSpinBox(reglages_groupbox->LastRowLastCol(),"J23",-2000,2000,0.001,6);
     
-    m = new DoubleSpinBox(reglages_groupbox->NewRow(),"m",-2000,2000,0.001);
-    g = new DoubleSpinBox(reglages_groupbox->LastRowLastCol(),"g",0,10,0.001);
+    m = new DoubleSpinBox(reglages_groupbox->NewRow(),"m",0,2000,0.001,3);
+    g = new DoubleSpinBox(reglages_groupbox->LastRowLastCol(),"g",-10,10,0.001);
     
     
     J(0,0) = J11->Value();
@@ -201,13 +203,13 @@ void Linear::UpdateFrom(const io_data *data) {
     
     T = m->Value()*(k1->Value()*zp + k2->Value()*ze + g->Value());
     
-    tau_roll = (double)tau(0);
+    tau_roll = (double)tau(0)/km->Value();
     
-    tau_pitch = (double)tau(1);
+    tau_pitch = (double)tau(1)/km->Value();
     
-    tau_yaw = (double)tau(2);
+    tau_yaw = -(double)tau(2)/km->Value();
     
-    Tr = (double)T;
+    Tr = (double)T/km->Value();
     
 
     if (tau_roll > sat->Value())

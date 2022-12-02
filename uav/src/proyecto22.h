@@ -16,6 +16,7 @@
 
 #include <UavStateMachine.h>
 #include "Linear.h"
+#include "Nested.h"
 
 namespace flair {
     namespace gui {
@@ -29,6 +30,7 @@ namespace flair {
         class ControlLaw;
         class TrajectoryGenerator1D;
         class Linear;
+        class Nested;
     }
     namespace sensor {
         class TargetController;
@@ -58,9 +60,10 @@ class proyecto22 : public flair::meta::UavStateMachine {
         float ComputeCustomThrust(void);
         void linear_ctrl(flair::core::Euler &torques);
         void nested_ctrl(flair::core::Euler &torques);
-        void nested_sliding(flair::core::Euler &torques);
+        void sliding_ctrl(flair::core::Euler &torques);
 
         flair::filter::Linear *u_linear;
+        flair::filter::Nested *u_nested;
 
         float thrust;
 

@@ -61,6 +61,8 @@ Nested::Nested(const LayoutPosition *position, string name): ControlLaw(position
     d2 = new DoubleSpinBox(reglages_groupbox->LastRowLastCol(), "d2:", -5000, 5000, 0.01, 3);
     //sat = new DoubleSpinBox(reglages_groupbox->NewRow(), "sat:", 0, 1, 0.1);
     
+    km = new DoubleSpinBox(reglages_groupbox->LastRowLastCol(), "km:", -10, 10, 0.01, 6);
+    
     
     //GroupBox *c_fisicas = new GroupBox(position->NewRow(), "Constantes Fisicas");
     
@@ -71,8 +73,8 @@ Nested::Nested(const LayoutPosition *position, string name): ControlLaw(position
     J13 = new DoubleSpinBox(reglages_groupbox->LastRowLastCol(),"J13",-2000,2000,0.001);
     J23 = new DoubleSpinBox(reglages_groupbox->LastRowLastCol(),"J23",-2000,2000,0.001);
     
-    m = new DoubleSpinBox(reglages_groupbox->NewRow(),"m",-2000,2000,0.001);
-    g = new DoubleSpinBox(reglages_groupbox->LastRowLastCol(),"g",0,10,0.001);
+    m = new DoubleSpinBox(reglages_groupbox->NewRow(),"m",0,2000,0.001,3);
+    g = new DoubleSpinBox(reglages_groupbox->LastRowLastCol(),"g",-10,10,0.001);
     
     
     J(0,0) = J11->Value();
@@ -195,13 +197,13 @@ void Nested::UpdateFrom(const io_data *data) {
     
     T = (m->Value()*(k1->Value()*zp + k2->Value()*ze + g->Value()))/(cos(th)*cos(phi));
     
-    tau_roll = (double)tau(0);
+    tau_roll = (double)tau(0)/km->Value();
     
-    tau_pitch = (double)tau(1);
+    tau_pitch = (double)tau(1)/km->Value();
     
-    tau_yaw = (double)tau(2);
+    tau_yaw = -(double)tau(2)/km->Value();
     
-    Tr = (double)T;
+    Tr = (double)T/km->Value();
     
 
 //    if (tau_roll > sat->Value())

@@ -61,7 +61,7 @@ Linear::Linear(const LayoutPosition *position, string name): ControlLaw(position
     k12 = new DoubleSpinBox(reglages_groupbox->LastRowLastCol(), "k12:", -5000, 5000, 0.01, 3);
     sat = new DoubleSpinBox(reglages_groupbox->NewRow(), "sat:", 0, 1, 0.1);
     
-    km = new DoubleSpinBox(reglages_groupbox->LastRowLastCol(), "km:", -10, 10, 0.001, 6);
+    km = new DoubleSpinBox(reglages_groupbox->LastRowLastCol(), "km:", -10, 10, 0.01, 6);
     
     
     //GroupBox *c_fisicas = new GroupBox(position->NewRow(), "Constantes Fisicas");

@@ -14,8 +14,8 @@
 #define SLIDING_H
 
 #include <Object.h>
-#include <Eigen/Dense>
 #include <ControlLaw.h>
+#include <Vector3D.h>
 
 namespace flair {
     namespace core {
@@ -61,7 +61,7 @@ public:
   * \param y3 phi
   * \param y4 phip
   */
-  void SetValues(float z, float zp, float psi, float psip, float x1, float x2, float x3, float x4, float y1, float y2, float y3, float y4) ;
+    void SetValues(float ze, float zp, float wex, float wey, float wez, float q0, float q1, float q2, float q3, float qd0, float qd1, float qd2, float qd3);
     
     void UseDefaultPlot(const flair::gui::LayoutPosition *position);
     void UseDefaultPlot2(const flair::gui::LayoutPosition *position);
@@ -70,17 +70,18 @@ public:
 
 private:
     flair::core::Matrix *state;
-    
-    Eigen::Matrix3d MatrixW(float &roll, float &pitch);
-    Eigen::Matrix3d MatrixWi(float &roll, float &pitch);
-    Eigen::Matrix3d MatrixWp(float &roll, float &pitch, float &rollp, float &pitchp);
-    
-    Eigen::Matrix3d CPO(Eigen::Vector3d aux);
 
-    flair::gui::DoubleSpinBox *k1, *k2, *k3, *k4, *k5, *k6, *k7, *k8, *k9, *k10, *k11, *k12, *sat;
-    flair::gui::DoubleSpinBox *J11, *J22, *J33, *J12, *J13, *J23, *J21, *J31, *J32, *m, *g;
-    Eigen::Matrix3d J;
-    Eigen::Matrix3d Ji;
+    flair::gui::DoubleSpinBox *T, *k1, *k2, *gamma, *alpha, *k, *Kd, *sat, *m, *g, *km, *p;
+    
+    float t0, delta_t;
+    
+    bool first_update;
+    
+    flair::core::Vector3Df sgnp, sgn;
+    
+    flair::core::Time previous_time;
+    
+    
 };
 } // end namespace filter
 } // end namespace flair

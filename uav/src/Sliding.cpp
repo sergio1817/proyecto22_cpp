@@ -15,14 +15,17 @@
 //
 /*********************************************************************/
 #include "Sliding.h"
-#include <Eigen/Dense>
+#include "Rk4.h"
 #include <Matrix.h>
+#include <Vector3D.h>
+#include <Quaternion.h>
 #include <Layout.h>
 #include <LayoutPosition.h>
 #include <GroupBox.h>
 #include <DoubleSpinBox.h>
 #include <DataPlot1D.h>
 #include <cmath>
+#include <Euler.h>
 
 using std::string;
 using namespace flair::core;
@@ -33,9 +36,9 @@ namespace flair {
 namespace filter {
 
 Sliding::Sliding(const LayoutPosition *position, string name): ControlLaw(position->getLayout(), name, 4){
-
+    first_update = true;
     // init matrix
-    input = new Matrix(this, 4, 3, floatType, name);
+    input = new Matrix(this, 5, 3, floatType, name);
   
     MatrixDescriptor *desc = new MatrixDescriptor(4, 1);
     desc->SetElementName(0, 0, "u_roll");
@@ -47,72 +50,55 @@ Sliding::Sliding(const LayoutPosition *position, string name): ControlLaw(positi
 
 
     GroupBox *reglages_groupbox = new GroupBox(position, name);
+    T = new DoubleSpinBox(reglages_groupbox->NewRow(), "period, 0 for auto", " s", 0, 1, 0.01);
     k1 = new DoubleSpinBox(reglages_groupbox->NewRow(), "k1:", -5000, 5000, 0.01, 3);
     k2 = new DoubleSpinBox(reglages_groupbox->LastRowLastCol(), "k2:", -5000, 5000, 0.01, 3);
-    k3 = new DoubleSpinBox(reglages_groupbox->NewRow(), "k3:", -5000, 5000, 0.01, 3);
-    k4 = new DoubleSpinBox(reglages_groupbox->LastRowLastCol(), "k4:", -5000, 5000, 0.01, 3);
-    k5 = new DoubleSpinBox(reglages_groupbox->NewRow(), "k5:", -5000, 5000, 0.01, 3);
-    k6 = new DoubleSpinBox(reglages_groupbox->LastRowLastCol(), "k6:", -5000, 5000, 0.01, 3);
-    k7 = new DoubleSpinBox(reglages_groupbox->LastRowLastCol(), "k7:", -5000, 5000, 0.01, 3);
-    k8 = new DoubleSpinBox(reglages_groupbox->LastRowLastCol(), "k8:", -5000, 5000, 0.01, 3);
-    k9 = new DoubleSpinBox(reglages_groupbox->NewRow(), "k9:", -5000, 5000, 0.01, 3);
-    k10 = new DoubleSpinBox(reglages_groupbox->LastRowLastCol(), "k10:", -5000, 5000, 0.01, 3);
-    k11 = new DoubleSpinBox(reglages_groupbox->LastRowLastCol(), "k11:", -5000, 5000, 0.01, 3);
-    k12 = new DoubleSpinBox(reglages_groupbox->LastRowLastCol(), "k12:", -5000, 5000, 0.01, 3);
+    gamma = new DoubleSpinBox(reglages_groupbox->NewRow(), "gamma:", -5000, 5000, 0.01, 6);
+    p = new DoubleSpinBox(reglages_groupbox->LastRowLastCol(), "p:", -5000, 5000, 0.01, 3);
+    alpha = new DoubleSpinBox(reglages_groupbox->LastRowLastCol(), "alpha:", -5000, 5000, 0.01, 6);
+    k = new DoubleSpinBox(reglages_groupbox->LastRowLastCol(), "k:", -5000, 5000, 0.01, 6);
+    Kd = new DoubleSpinBox(reglages_groupbox->LastRowLastCol(), "Kd:", -5000, 5000, 0.01, 6);
     sat = new DoubleSpinBox(reglages_groupbox->NewRow(), "sat:", 0, 1, 0.1);
     
+    km = new DoubleSpinBox(reglages_groupbox->LastRowLastCol(), "km:", -10, 10, 0.01, 6);
+    
+    m = new DoubleSpinBox(reglages_groupbox->NewRow(),"m",0,2000,0.001,3);
+    g = new DoubleSpinBox(reglages_groupbox->LastRowLastCol(),"g",-10,10,0.001);
     
     //GroupBox *c_fisicas = new GroupBox(position->NewRow(), "Constantes Fisicas");
     
-    J11 = new DoubleSpinBox(reglages_groupbox->NewRow(),"J11",-2000,2000,0.001);
-    J22 = new DoubleSpinBox(reglages_groupbox->LastRowLastCol(),"J22",-2000,2000,0.001);
-    J33 = new DoubleSpinBox(reglages_groupbox->LastRowLastCol(),"J33",-2000,2000,0.001);
-    J12 = new DoubleSpinBox(reglages_groupbox->NewRow(),"J12",-2000,2000,0.001);
-    J13 = new DoubleSpinBox(reglages_groupbox->LastRowLastCol(),"J13",-2000,2000,0.001);
-    J23 = new DoubleSpinBox(reglages_groupbox->LastRowLastCol(),"J23",-2000,2000,0.001);
+    t0 = 0;
     
-    m = new DoubleSpinBox(reglages_groupbox->NewRow(),"m",-2000,2000,0.001);
-    g = new DoubleSpinBox(reglages_groupbox->LastRowLastCol(),"g",0,10,0.001);
-    
-    
-    J(0,0) = J11->Value();
-    J(0,1) = J12->Value();
-    J(0,2) = J13->Value();
-    J(1,1) = J22->Value();
-    J(1,2) = J23->Value();
-    J(2,2) = J33->Value();
-    
-    J(1,0) = J(0,1);
-    J(2,0) = J(0,2);
-    J(2,1) = J(1,2);
-    
-    
-    Ji = J.inverse();
     
 }
 
 Sliding::~Sliding(void) {}
 
 void Sliding::Reset(void) {
+    first_update = true;
+    t0 = double(GetTime())/1000000000;
+    sgnp = (0,0,0);
+    sgn = (0,0,0);
 //    pimpl_->i = 0;
 //    pimpl_->first_update = true;
 }
 
-void Sliding::SetValues(float z, float zp, float psi, float psip, float x1, float x2, float x3, float x4, float y1, float y2, float y3, float y4) {
-  input->SetValue(0, 0, x1);
-  input->SetValue(1, 0, x2);
-  input->SetValue(2, 0, x3);
-  input->SetValue(3, 0, x4);
+void Sliding::SetValues(float ze, float zp, float wex, float wey, float wez, float q0, float q1, float q2, float q3, float qd0, float qd1, float qd2, float qd3){
+  input->SetValue(0, 0, ze);
+  input->SetValue(1, 0, wex);
+  input->SetValue(2, 0, wey);
+  input->SetValue(3, 0, wez);
+  input->SetValue(4, 0, zp);
   
-  input->SetValue(0, 1, y1);
-  input->SetValue(1, 1, y2);
-  input->SetValue(2, 1, y3);
-  input->SetValue(3, 1, y4);
+  input->SetValue(0, 1, q0);
+  input->SetValue(1, 1, q1);
+  input->SetValue(2, 1, q2);
+  input->SetValue(3, 1, q3);
   
-  input->SetValue(0, 2, z);
-  input->SetValue(1, 2, zp);
-  input->SetValue(2, 2, psi);
-  input->SetValue(3, 2, psip);
+  input->SetValue(0, 2, qd0);
+  input->SetValue(1, 2, qd1);
+  input->SetValue(2, 2, qd2);
+  input->SetValue(3, 2, qd3);
 }
 
 void Sliding::UseDefaultPlot(const LayoutPosition *position) {
@@ -141,8 +127,20 @@ void Sliding::UseDefaultPlot4(const LayoutPosition *position) {
 
 
 void Sliding::UpdateFrom(const io_data *data) {
-    float T;
-    Eigen::Vector3d tau(0,0,0);
+    float tactual=double(GetTime())/1000000000-t0;
+    float Trs, tau_roll, tau_pitch, tau_yaw, Tr;
+    
+    if (T->Value() == 0) {
+        delta_t = (float)(data->DataDeltaTime()) / 1000000000.;
+    } else {
+        delta_t = T->Value();
+    }
+    
+    if (first_update == true) {
+        delta_t = 0;
+        first_update = false;
+    }
+    
     const Matrix* input = dynamic_cast<const Matrix*>(data);
   
     if (!input) {
@@ -153,61 +151,53 @@ void Sliding::UpdateFrom(const io_data *data) {
 
     input->GetMutex();
   
-    float x = input->ValueNoMutex(0, 0);
-    float xp = input->ValueNoMutex(1, 0);
-    float th = input->ValueNoMutex(2, 0);
-    float thp = input->ValueNoMutex(3, 0);
-  
-    float y = input->ValueNoMutex(0, 1);
-    float yp = input->ValueNoMutex(1, 1);
-    float phi = input->ValueNoMutex(2, 1);
-    float phip = input->ValueNoMutex(3, 1);
+    float ze = input->ValueNoMutex(0, 0);
+    float zp = input->ValueNoMutex(4, 0);
     
-    float ze = input->ValueNoMutex(0, 2);
-    float zp = input->ValueNoMutex(1, 2);
-    float psi = input->ValueNoMutex(2, 2);
-    float psip = input->ValueNoMutex(3, 2);
+    Vector3Df we = Vector3Df(input->ValueNoMutex(1, 0),input->ValueNoMutex(2, 0),input->ValueNoMutex(3, 0));
+
+    Quaternion q = Quaternion(input->ValueNoMutex(0, 1),input->ValueNoMutex(1, 1),input->ValueNoMutex(2, 1),input->ValueNoMutex(3, 1));
+    Quaternion qd = Quaternion(input->ValueNoMutex(0, 2),input->ValueNoMutex(1, 2),input->ValueNoMutex(2, 2),input->ValueNoMutex(3, 2));
     
     input->ReleaseMutex();
     
-    Eigen::Vector4d X1(x, xp, th, thp);
-    Eigen::Vector4d K1(k5->Value(), k6->Value(), k7->Value(), k8->Value());
+    Euler currentAngles = q.ToEuler();
     
-    Eigen::Vector4d X2(y, yp, phi, phip);
-    Eigen::Vector4d K2(k9->Value(), k10->Value(), k11->Value(), k12->Value());
+    Quaternion qdc = qd.GetConjugate();
+    Quaternion qe = q*qdc;
     
-    Eigen::Matrix3d W = MatrixW(phi, th);
-    Eigen::Matrix3d Wi = MatrixWi(phi, th);
-    Eigen::Matrix3d Wp = MatrixWp(phi, th, phip, thp);
+    Quaternion QdTqe = qdc*qe*qd;
+    Vector3Df QdTqe3 = Vector3Df(QdTqe.q1,QdTqe.q2,QdTqe.q3);
     
+    Vector3Df nu = we + alpha->Value()*QdTqe3;
     
-    Eigen::Vector3d w(phip, thp, psip);
+    Vector3Df nu_t0 = 0.01*(1,1,1);
     
-    Eigen::Vector3d etap = Wi*w;
+    Vector3Df nud = nu_t0*exp(-k->Value()*(tactual));
     
-    double tau_th_t = K1.transpose()*X1;
+    Vector3Df nuq = nu-nud;
     
-    double tau_phi_t = K2.transpose()*X2;
+    sgnp.x = signth(nuq.x,p->Value());
+    sgnp.y = signth(nuq.y,p->Value());
+    sgnp.z = signth(nuq.z,p->Value());
     
-    double tau_psi_t = -k3->Value()*psip - k4->Value()*psi;
+    sgn.x = rk4(function1d, sgn.x, sgnp.x, delta_t);
+    sgn.y = rk4(function1d, sgn.y, sgnp.y, delta_t);
+    sgn.z = rk4(function1d, sgn.z, sgnp.z, delta_t);
     
-    Eigen::Vector3d taub(tau_phi_t, tau_th_t, tau_psi_t);
+    Vector3Df nur = nuq + gamma->Value()*sgn;
     
-    float tau_roll, tau_pitch, tau_yaw, Tr;
+    Vector3Df tau = Kd->Value()*nur;
     
+    Trs = ( m->Value()*(k1->Value()*zp + k2->Value()*ze + g->Value()) );
     
-    tau = J*W*(Wi*Wp*etap + Wi*Ji*CPO(W*etap)*J*W*etap + taub);
-
+    tau_roll = (double)tau.x;
     
-    T = m->Value()*(k1->Value()*zp + k2->Value()*ze + g->Value());
+    tau_pitch = (double)tau.y;
     
-    tau_roll = (double)tau(0);
+    tau_yaw = (double)tau.z;
     
-    tau_pitch = (double)tau(1);
-    
-    tau_yaw = (double)tau(2);
-    
-    Tr = (double)T;
+    Tr = (double)Trs/km->Value();
     
 
     if (tau_roll > sat->Value())
@@ -243,74 +233,11 @@ void Sliding::UpdateFrom(const io_data *data) {
     output->SetValue(2, 0, tau_yaw);
     output->SetValue(3, 0, Tr);
     output->SetDataTime(data->DataTime());
+    
+    previous_time=data->DataTime();
 }
 
 
-Eigen::Matrix3d Sliding::MatrixW(float &roll, float &pitch){
-    Eigen::Matrix3d W;
-    
-    W(0,0) = 1;
-    W(0,1) = 0;
-    W(0,2) = -sin(pitch);
-    
-    W(1,0) = 0;
-    W(1,1) = cos(roll);
-    W(1,2) = sin(roll)*cos(pitch);
-    
-    W(2,0) = 0;
-    W(2,1) = -sin(roll);
-    W(2,2) = cos(roll)*cos(pitch);
-    
-    return W;
-}
-
-Eigen::Matrix3d Sliding::MatrixWi(float &roll, float &pitch){
-    Eigen::Matrix3d Wi;
-    
-    
-    Wi(0,0) = 1;
-    Wi(0,1) = sin(roll)*tan(pitch);
-    Wi(0,2) = tan(pitch)*cos(roll);
-    
-    Wi(1,0) = 0;
-    Wi(1,1) = cos(roll);
-    Wi(1,2) = -sin(pitch);
-    
-    Wi(2,0) = 0;
-    Wi(2,1) = sin(roll)/cos(pitch);
-    Wi(2,2) = cos(roll)/cos(pitch);
-    
-    return Wi;
-}
-
-Eigen::Matrix3d Sliding::MatrixWp(float &roll, float &pitch, float &rollp, float &pitchp){
-    Eigen::Matrix3d Wp;
-    
-    Wp(0,0) = 0;
-    Wp(0,1) = 0;
-    Wp(0,2) = -pitchp*cos(pitch);
-    
-    Wp(1,0) = 0;
-    Wp(1,1) = -rollp*sin(roll);
-    Wp(1,2) = rollp*cos(pitch)*cos(roll) - pitchp*sin(pitch)*sin(roll);
-    
-    Wp(2,0) = 0;
-    Wp(2,1) = -roll*cos(roll);
-    Wp(2,2) = -pitchp*cos(roll)*sin(pitch) - rollp*cos(pitch)*sin(roll);
-    
-    return Wp;
-}
-
-
-Eigen::Matrix3d Sliding::CPO(Eigen::Vector3d aux){
-    Eigen::Matrix3d S;
-    
-    S << 0, -aux(2), aux(1),
-        aux(2), 0, -aux(0),
-        -aux(1), aux(0), 0;
-    
-    return S;
-}
 
 
 } // end namespace filter

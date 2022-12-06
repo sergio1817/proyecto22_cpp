@@ -12,9 +12,9 @@ SET(FLAIR_USE_FILTER TRUE)
 SET(FLAIR_USE_SENSOR_ACTUATOR TRUE)
 SET(FLAIR_USE_META TRUE)
 
-SET(delivery_root_ADDRESS_PATH bin/arm)
+#SET(delivery_root_ADDRESS_PATH bin/arm)
 
-SET(USE_SOURCE_PERMISSIONS TRUE)
+#SET(USE_SOURCE_PERMISSIONS TRUE)
 
 include($ENV{FLAIR_ROOT}/flair-src/cmake-modules/GlobalCmakeFlair.cmake)
 include($ENV{FLAIR_ROOT}/flair-dev/cmake-modules/GlobalCmakeFlair.cmake)
@@ -25,6 +25,7 @@ SET(SRC_FILES
 	src/Linear.cpp
 	src/Nested.cpp
 	src/Sliding.cpp
+	src/Rk4.cpp
 )
 
 FLAIR_DEMO(${PROJECT_NAME} "${SRC_FILES}"

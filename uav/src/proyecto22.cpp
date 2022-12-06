@@ -14,6 +14,7 @@
 #include "proyecto22.h"
 #include "Linear.h"
 #include "Nested.h"
+#include "Sliding.h"
 #include <TargetController.h>
 #include <Uav.h>
 #include <GridLayout.h>
@@ -23,7 +24,6 @@
 #include <DoubleSpinBox.h>
 #include <FrameworkManager.h>
 #include <Matrix.h>
-#include <Eigen/Dense>
 #include <MatrixDescriptor.h>
 #include <cmath>
 #include <Tab.h>
@@ -82,9 +82,16 @@ proyecto22::proyecto22(TargetController *controller): UavStateMachine(controller
     u_nested->UseDefaultPlot3(graphLawTab3->At(0, 2));
     u_nested->UseDefaultPlot4(graphLawTab3->At(1, 2));
     
+    u_sliding = new Sliding(setupLawTab4->At(0, 0), "u_smc");
+    u_sliding->UseDefaultPlot(graphLawTab4->At(0, 0));
+    u_sliding->UseDefaultPlot2(graphLawTab4->At(0, 1));
+    u_sliding->UseDefaultPlot3(graphLawTab4->At(0, 2));
+    u_sliding->UseDefaultPlot4(graphLawTab4->At(1, 2));
+    
 
     AddDeviceToControlLawLog(u_linear);
     AddDeviceToControlLawLog(u_nested);
+    AddDeviceToControlLawLog(u_sliding);
 
 
 }
@@ -124,15 +131,14 @@ void proyecto22::SignalEvent(Event_t event) {
     switch(event) {
     case Event_t::TakingOff:
         behaviourMode=BehaviourMode_t::Default;
-        control_select->setEnabled(false);
         break;
     case Event_t::Stopped:
-        behaviourMode=BehaviourMode_t::Default;
         control_select->setEnabled(true);
+        behaviourMode=BehaviourMode_t::Default;
         break;
     case Event_t::EnteringFailSafeMode:
-        behaviourMode=BehaviourMode_t::Default;
         control_select->setEnabled(true);
+        behaviourMode=BehaviourMode_t::Default;
         break;
     }
 }
@@ -151,7 +157,6 @@ void proyecto22::ExtraCheckPushButton(void) {
 void proyecto22::ExtraCheckJoystick(void) {
     //R1
     if(GetTargetController()->IsButtonPressed(9) && (behaviourMode!=BehaviourMode_t::control)) {
-        Thread::Info("boton\n");
         Startproyecto22();
     }
     //L1
@@ -163,13 +168,15 @@ void proyecto22::ExtraCheckJoystick(void) {
 
 void proyecto22::Startproyecto22(void) {
     control_select->setEnabled(false);
-    Thread::Info("fnc\n");
     //ask UavStateMachine to enter in custom torques
     if (SetTorqueMode(TorqueMode_t::Custom) && SetThrustMode(ThrustMode_t::Custom)) {
         Thread::Info("proyecto22: start\n");
         u_linear->Reset();
+        u_nested->Reset();
+        u_sliding->Reset();
     } else {
         Thread::Warn("proyecto22: could not start\n");
+        control_select->setEnabled(true);
         return;
     }
 
@@ -216,7 +223,7 @@ void proyecto22::linear_ctrl(Euler &torques){
     
     u_linear->Update(GetTime());
     
-    Thread::Info("%f \t %f \t %f\n",currentAngles.yaw,currentAngularSpeed.z, u_linear->Output(2));
+    //Thread::Info("%f \t %f \t %f\n",currentAngles.yaw,currentAngularSpeed.z, u_linear->Output(2));
     
     torques.roll = u_linear->Output(0);
     torques.pitch = u_linear->Output(1);
@@ -255,11 +262,11 @@ void proyecto22::nested_ctrl(Euler &torques){
     
     u_nested->Update(GetTime());
     
-    Thread::Info("%f \t %f \t %f \t %f \n",u_nested->Output(0),u_nested->Output(1),u_nested->Output(2), u_nested->Output(3));
+    //Thread::Info("%f \t %f \t %f \t %f \n",u_nested->Output(0),u_nested->Output(1),u_nested->Output(2), u_nested->Output(3));
     
-    torques.roll = u_nested->Output(0);
-    torques.pitch = u_nested->Output(1);
-    torques.yaw = u_nested->Output(2);
+//    torques.roll = u_nested->Output(0);
+//    torques.pitch = u_nested->Output(1);
+//    torques.yaw = u_nested->Output(2);
     thrust = u_nested->Output(3);
     
     
@@ -272,17 +279,13 @@ void proyecto22::sliding_ctrl(Euler &torques){
     Quaternion refQuaternion;
     Vector3Df refAngularRates;
     refOrientation->GetQuaternionAndAngularRates(refQuaternion, refAngularRates);
-        
-    Euler refAngles = refQuaternion.ToEuler();
 
     const AhrsData *currentOrientation = GetDefaultOrientation();
     Quaternion currentQuaternion;
     Vector3Df currentAngularRates;
     currentOrientation->GetQuaternionAndAngularRates(currentQuaternion, currentAngularRates);
     
-    Euler currentAngles = currentQuaternion.ToEuler();
-    
-    Vector3Df currentAngularSpeed = GetCurrentAngularSpeed();
+    //Vector3Df currentAngularSpeed = GetCurrentAngularSpeed();
     
     float refAltitude, refVerticalVelocity;
     GetDefaultReferenceAltitude(refAltitude, refVerticalVelocity);
@@ -291,7 +294,22 @@ void proyecto22::sliding_ctrl(Euler &torques){
     
     AltitudeValues(z,zp);
     
+    float ze = z - refAltitude;
     
+    Vector3Df we = currentAngularRates - refAngularRates;
+    
+    u_sliding->SetValues(ze,zp,we.x,we.y,we.z,currentQuaternion.q0,currentQuaternion.q1,currentQuaternion.q2,currentQuaternion.q3,
+                            refQuaternion.q0,refQuaternion.q1, refQuaternion.q2,refQuaternion.q3);
+                         
+    u_sliding->Update(GetTime());
+    
+    //Thread::Info("%f\t %f\t %f\t %f\n",u_sliding->Output(0),u_sliding->Output(1), u_sliding->Output(2), u_sliding->Output(3));
+    
+    torques.roll = u_sliding->Output(0);
+    torques.pitch = u_sliding->Output(1);
+    torques.yaw = u_sliding->Output(2);
+    //thrust = u_sliding->Output(3);
+    thrust = ComputeDefaultThrust();
     
 
 }

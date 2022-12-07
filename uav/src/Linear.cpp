@@ -59,7 +59,10 @@ Linear::Linear(const LayoutPosition *position, string name): ControlLaw(position
     k10 = new DoubleSpinBox(reglages_groupbox->LastRowLastCol(), "k10:", -5000, 5000, 0.01, 3);
     k11 = new DoubleSpinBox(reglages_groupbox->LastRowLastCol(), "k11:", -5000, 5000, 0.01, 3);
     k12 = new DoubleSpinBox(reglages_groupbox->LastRowLastCol(), "k12:", -5000, 5000, 0.01, 3);
-    sat = new DoubleSpinBox(reglages_groupbox->NewRow(), "sat:", 0, 1, 0.1);
+    sat_r = new DoubleSpinBox(reglages_groupbox->NewRow(), "sat roll:", 0, 1, 0.1);
+    sat_p = new DoubleSpinBox(reglages_groupbox->LastRowLastCol(), "sat pitch:", 0, 1, 0.1);
+    sat_y = new DoubleSpinBox(reglages_groupbox->LastRowLastCol(), "sat yaw:", 0, 1, 0.1);
+    sat_t = new DoubleSpinBox(reglages_groupbox->LastRowLastCol(), "sat thrust:", 0, 1, 0.1);
     
     km = new DoubleSpinBox(reglages_groupbox->LastRowLastCol(), "km:", -10, 10, 0.01, 6);
     
@@ -212,25 +215,10 @@ void Linear::UpdateFrom(const io_data *data) {
     Tr = (double)T/km->Value();
     
 
-    if (tau_roll > sat->Value())
-        tau_roll = sat->Value();
-    if (tau_roll < -sat->Value())
-        tau_roll = -sat->Value();
-    
-    if (tau_pitch > sat->Value())
-        tau_pitch = sat->Value();
-    if (tau_pitch < -sat->Value())
-        tau_pitch = -sat->Value();
-    
-    if (tau_yaw > sat->Value())
-        tau_yaw = sat->Value();
-    if (tau_yaw < -sat->Value())
-        tau_yaw = -sat->Value();
-    
-    if (Tr > sat->Value())
-        Tr = sat->Value();
-    if (Tr < -sat->Value())
-        Tr = -sat->Value();
+    tau_roll = Sat(tau_roll,sat_r->Value());
+    tau_pitch = Sat(tau_pitch,sat_p->Value());
+    tau_yaw = Sat(tau_yaw,sat_y->Value());
+    Tr = Sat(Tr,sat_t->Value());
     
     state->GetMutex();
     state->SetValueNoMutex(0, 0, tau_roll);
@@ -314,6 +302,13 @@ Eigen::Matrix3d Linear::CPO(Eigen::Vector3d aux){
     return S;
 }
 
+float Linear::Sat(float value, float borne) {
+  if (value < -borne)
+    return -borne;
+  if (value > borne)
+    return borne;
+  return value;
+}
 
 } // end namespace filter
 } // end namespace flair

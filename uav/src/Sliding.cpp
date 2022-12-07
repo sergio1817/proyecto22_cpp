@@ -58,7 +58,10 @@ Sliding::Sliding(const LayoutPosition *position, string name): ControlLaw(positi
     alpha = new DoubleSpinBox(reglages_groupbox->LastRowLastCol(), "alpha:", -5000, 5000, 0.01, 6);
     k = new DoubleSpinBox(reglages_groupbox->LastRowLastCol(), "k:", -5000, 5000, 0.01, 6);
     Kd = new DoubleSpinBox(reglages_groupbox->LastRowLastCol(), "Kd:", -5000, 5000, 0.01, 6);
-    sat = new DoubleSpinBox(reglages_groupbox->NewRow(), "sat:", 0, 1, 0.1);
+    sat_r = new DoubleSpinBox(reglages_groupbox->NewRow(), "sat roll:", 0, 1, 0.1);
+    sat_p = new DoubleSpinBox(reglages_groupbox->LastRowLastCol(), "sat pitch:", 0, 1, 0.1);
+    sat_y = new DoubleSpinBox(reglages_groupbox->LastRowLastCol(), "sat yaw:", 0, 1, 0.1);
+    sat_t = new DoubleSpinBox(reglages_groupbox->LastRowLastCol(), "sat thrust:", 0, 1, 0.1);
     
     km = new DoubleSpinBox(reglages_groupbox->LastRowLastCol(), "km:", -10, 10, 0.01, 6);
     
@@ -67,7 +70,10 @@ Sliding::Sliding(const LayoutPosition *position, string name): ControlLaw(positi
     
     //GroupBox *c_fisicas = new GroupBox(position->NewRow(), "Constantes Fisicas");
     
-    t0 = 0;
+    t0 = double(GetTime())/1000000000;
+    
+    sgnp = (0,0,0);
+    sgn = (0,0,0);
     
     
 }
@@ -128,7 +134,7 @@ void Sliding::UseDefaultPlot4(const LayoutPosition *position) {
 
 void Sliding::UpdateFrom(const io_data *data) {
     float tactual=double(GetTime())/1000000000-t0;
-    float Trs, tau_roll, tau_pitch, tau_yaw, Tr;
+    float Trs=0, tau_roll=0, tau_pitch=0, tau_yaw=0, Tr=0;
     
     if (T->Value() == 0) {
         delta_t = (float)(data->DataDeltaTime()) / 1000000000.;
@@ -171,7 +177,7 @@ void Sliding::UpdateFrom(const io_data *data) {
     
     Vector3Df nu = we + alpha->Value()*QdTqe3;
     
-    Vector3Df nu_t0 = 0.01*(1,1,1);
+    Vector3Df nu_t0 = (0,0,1);
     
     Vector3Df nud = nu_t0*exp(-k->Value()*(tactual));
     
@@ -189,7 +195,7 @@ void Sliding::UpdateFrom(const io_data *data) {
     
     Vector3Df tau = Kd->Value()*nur;
     
-    Trs = ( m->Value()*(k1->Value()*zp + k2->Value()*ze + g->Value()) );
+    Trs =  (m->Value()*(k1->Value()*zp + k2->Value()*ze + g->Value()))/(cos(currentAngles.pitch)*cos(currentAngles.roll));
     
     tau_roll = (double)tau.x;
     
@@ -199,26 +205,10 @@ void Sliding::UpdateFrom(const io_data *data) {
     
     Tr = (double)Trs/km->Value();
     
-
-    if (tau_roll > sat->Value())
-        tau_roll = sat->Value();
-    if (tau_roll < -sat->Value())
-        tau_roll = -sat->Value();
-    
-    if (tau_pitch > sat->Value())
-        tau_pitch = sat->Value();
-    if (tau_pitch < -sat->Value())
-        tau_pitch = -sat->Value();
-    
-    if (tau_yaw > sat->Value())
-        tau_yaw = sat->Value();
-    if (tau_yaw < -sat->Value())
-        tau_yaw = -sat->Value();
-    
-    if (Tr > sat->Value())
-        Tr = sat->Value();
-    if (Tr < -sat->Value())
-        Tr = -sat->Value();
+    tau_roll = Sat(tau_roll,sat_r->Value());
+    tau_pitch = Sat(tau_pitch,sat_p->Value());
+    tau_yaw = Sat(tau_yaw,sat_y->Value());
+    Tr = Sat(Tr,sat_t->Value());
     
     state->GetMutex();
     state->SetValueNoMutex(0, 0, tau_roll);
@@ -237,7 +227,13 @@ void Sliding::UpdateFrom(const io_data *data) {
     previous_time=data->DataTime();
 }
 
-
+float Sliding::Sat(float value, float borne) {
+  if (value < -borne)
+    return -borne;
+  if (value > borne)
+    return borne;
+  return value;
+}
 
 
 } // end namespace filter

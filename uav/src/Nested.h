@@ -79,7 +79,7 @@ private:
     
     Eigen::Matrix3d CPO(Eigen::Vector3d aux);
 
-    flair::gui::DoubleSpinBox *k1, *k2, *k3, *k4, *a1, *b1, *c1, *d1, *a2, *b2, *c2, *d2;
+    flair::gui::DoubleSpinBox *k1, *k2, *k3, *k4, *a1, *b1, *c1, *d1, *a2, *b2, *c2, *d2, *sat_r, *sat_p, *sat_y, *sat_t;
     flair::gui::DoubleSpinBox *J11, *J22, *J33, *J12, *J13, *J23, *J21, *J31, *J32, *m, *g, *km;
     Eigen::Matrix3d J;
     Eigen::Matrix3d Ji;

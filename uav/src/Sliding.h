@@ -67,13 +67,17 @@ public:
     void UseDefaultPlot2(const flair::gui::LayoutPosition *position);
     void UseDefaultPlot3(const flair::gui::LayoutPosition *position);
     void UseDefaultPlot4(const flair::gui::LayoutPosition *position);
+    
+    float t0;
 
 private:
     flair::core::Matrix *state;
 
-    flair::gui::DoubleSpinBox *T, *k1, *k2, *gamma, *alpha, *k, *Kd, *sat, *m, *g, *km, *p;
+    flair::gui::DoubleSpinBox *T, *k1, *k2, *gamma, *alpha, *k, *Kd, *sat_r, *sat_p, *sat_y, *sat_t, *m, *g, *km, *p;
     
-    float t0, delta_t;
+    float Sat(float value, float borne);
+    
+    float delta_t;
     
     bool first_update;
     

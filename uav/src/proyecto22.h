@@ -26,6 +26,8 @@ namespace flair {
         class Tab;
         class TabWidget;
         class DoubleSpinBox;
+        class GroupBox;
+        class Label;
     }
     namespace filter {
         class ControlLaw;
@@ -63,17 +65,27 @@ class proyecto22 : public flair::meta::UavStateMachine {
         void linear_ctrl(flair::core::Euler &torques);
         void nested_ctrl(flair::core::Euler &torques);
         void sliding_ctrl(flair::core::Euler &torques);
+        void sliding_track(flair::core::Euler &torques);
+        
+        flair::core::AhrsData *GetReferenceOrientation(void);
 
         flair::filter::Linear *u_linear;
         flair::filter::Nested *u_nested;
         flair::filter::Sliding *u_sliding;
+        
+        bool first_update;
 
-        float thrust;
+        float thrust, t0;
 
         flair::gui::PushButton *start_prueba1,*stop_prueba1;
         flair::gui::ComboBox *control_select;   
         flair::gui::Tab *setupLawTab2, *graphLawTab2, *lawTab2, *setupLawTab3, *graphLawTab3, *setupLawTab4, *graphLawTab4;
         flair::gui::TabWidget *tabWidget2;
+        flair::gui::GroupBox *seg;
+        flair::gui::DoubleSpinBox *a, *b;
+        flair::gui::Label *l;
+        
+        flair::core::AhrsData *customReferenceOrientation;
 };
 
 #endif // PROYECTO22_H

@@ -71,13 +71,15 @@ public:
 private:
     flair::core::Matrix *state;
     
+    float Sat(float value, float borne);
+    
     Eigen::Matrix3d MatrixW(float &roll, float &pitch);
     Eigen::Matrix3d MatrixWi(float &roll, float &pitch);
     Eigen::Matrix3d MatrixWp(float &roll, float &pitch, float &rollp, float &pitchp);
     
     Eigen::Matrix3d CPO(Eigen::Vector3d aux);
 
-    flair::gui::DoubleSpinBox *k1, *k2, *k3, *k4, *k5, *k6, *k7, *k8, *k9, *k10, *k11, *k12, *sat;
+    flair::gui::DoubleSpinBox *k1, *k2, *k3, *k4, *k5, *k6, *k7, *k8, *k9, *k10, *k11, *k12, *sat_r, *sat_p, *sat_y, *sat_t;
     flair::gui::DoubleSpinBox *J11, *J22, *J33, *J12, *J13, *J23, *J21, *J31, *J32, *m, *g, *km;
     Eigen::Matrix3d J;
     Eigen::Matrix3d Ji;

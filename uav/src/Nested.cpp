@@ -59,7 +59,10 @@ Nested::Nested(const LayoutPosition *position, string name): ControlLaw(position
     b2 = new DoubleSpinBox(reglages_groupbox->LastRowLastCol(), "b2:", -5000, 5000, 0.01, 3);
     c2 = new DoubleSpinBox(reglages_groupbox->LastRowLastCol(), "c2:", -5000, 5000, 0.01, 3);
     d2 = new DoubleSpinBox(reglages_groupbox->LastRowLastCol(), "d2:", -5000, 5000, 0.01, 3);
-    //sat = new DoubleSpinBox(reglages_groupbox->NewRow(), "sat:", 0, 1, 0.1);
+    sat_r = new DoubleSpinBox(reglages_groupbox->NewRow(), "sat roll:", 0, 1, 0.1);
+    sat_p = new DoubleSpinBox(reglages_groupbox->LastRowLastCol(), "sat pitch:", 0, 1, 0.1);
+    sat_y = new DoubleSpinBox(reglages_groupbox->LastRowLastCol(), "sat yaw:", 0, 1, 0.1);
+    sat_t = new DoubleSpinBox(reglages_groupbox->LastRowLastCol(), "sat thrust:", 0, 1, 0.1);
     
     km = new DoubleSpinBox(reglages_groupbox->LastRowLastCol(), "km:", -10, 10, 0.01, 6);
     
@@ -181,9 +184,9 @@ void Nested::UpdateFrom(const io_data *data) {
     
     Eigen::Vector3d etap = Wi*w;
     
-    double tau_th_t = -Sat(thp + Sat(th + thp + Sat(2*th + thp - (1/g->Value())*xp + Sat(3*th + thp - (3/g->Value())*xp -(1/g->Value())*x ,d1->Value()) ,c1->Value()) ,b1->Value()) ,a1->Value());
+    double tau_th_t = Sat(thp + Sat(th + thp + Sat(2*th + thp - (1/g->Value())*xp + Sat(3*th + thp - (3/g->Value())*xp -(1/g->Value())*x ,d1->Value()) ,c1->Value()) ,b1->Value()) ,a1->Value());
     
-    double tau_phi_t = -Sat(phip + Sat(phi + phip + Sat(2*phi + phip - (1/g->Value())*yp + Sat(3*phi + phip - (3/g->Value())*yp -(1/g->Value())*y ,d2->Value()) ,c2->Value()) ,b2->Value()) ,a2->Value());;
+    double tau_phi_t = Sat(phip + Sat(phi + phip + Sat(2*phi + phip - (1/g->Value())*yp + Sat(3*phi + phip - (3/g->Value())*yp -(1/g->Value())*y ,d2->Value()) ,c2->Value()) ,b2->Value()) ,a2->Value());;
     
     double tau_psi_t = -k3->Value()*psip - k4->Value()*psi;
     
@@ -205,26 +208,10 @@ void Nested::UpdateFrom(const io_data *data) {
     
     Tr = (double)T/km->Value();
     
-
-//    if (tau_roll > sat->Value())
-//        tau_roll = sat->Value();
-//    if (tau_roll < -sat->Value())
-//        tau_roll = -sat->Value();
-//    
-//    if (tau_pitch > sat->Value())
-//        tau_pitch = sat->Value();
-//    if (tau_pitch < -sat->Value())
-//        tau_pitch = -sat->Value();
-//    
-//    if (tau_yaw > sat->Value())
-//        tau_yaw = sat->Value();
-//    if (tau_yaw < -sat->Value())
-//        tau_yaw = -sat->Value();
-//    
-//    if (Tr > sat->Value())
-//        Tr = sat->Value();
-//    if (Tr < -sat->Value())
-//        Tr = -sat->Value();
+    tau_roll = Sat(tau_roll,sat_r->Value());
+    tau_pitch = Sat(tau_pitch,sat_p->Value());
+    tau_yaw = Sat(tau_yaw,sat_y->Value());
+    Tr = Sat(Tr,sat_t->Value());
     
     state->GetMutex();
     state->SetValueNoMutex(0, 0, tau_roll);

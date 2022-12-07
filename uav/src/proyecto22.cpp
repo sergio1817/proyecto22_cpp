@@ -22,6 +22,7 @@
 #include <DataPlot1D.h>
 #include <DataPlot2D.h>
 #include <DoubleSpinBox.h>
+#include <Label.h>
 #include <FrameworkManager.h>
 #include <Matrix.h>
 #include <MatrixDescriptor.h>
@@ -63,6 +64,7 @@ proyecto22::proyecto22(TargetController *controller): UavStateMachine(controller
     control_select->AddItem("Linear");
     control_select->AddItem("Nested");
     control_select->AddItem("Sliding");
+    control_select->AddItem("Sliding tracking");
     
     start_prueba1=new PushButton(groupbox->NewRow(),"start control");
     stop_prueba1=new PushButton(groupbox->NewRow(),"stop control");
@@ -88,6 +90,16 @@ proyecto22::proyecto22(TargetController *controller): UavStateMachine(controller
     u_sliding->UseDefaultPlot3(graphLawTab4->At(0, 2));
     u_sliding->UseDefaultPlot4(graphLawTab4->At(1, 2));
     
+    GroupBox *seg = new GroupBox(setupLawTab4->At(1, 0), "Tracking");
+    l = new Label(seg->NewRow(), "a*sin(b*t)");
+    a = new DoubleSpinBox(seg->NewRow(), "a:", -10, 10, 0.01,3);
+    b = new DoubleSpinBox(seg->LastRowLastCol(), "b:", 0, 10, 0.01, 3);
+    
+    customReferenceOrientation= new AhrsData(this,"reference");
+    
+    uav->GetAhrs()->AddPlot(customReferenceOrientation,DataPlot::Yellow);
+    AddDataToControlLawLog(customReferenceOrientation);
+    first_update = true;
 
     AddDeviceToControlLawLog(u_linear);
     AddDeviceToControlLawLog(u_nested);
@@ -117,6 +129,15 @@ void proyecto22::ComputeCustomTorques(Euler &torques) {
             Thread::Info("Sliding\n");
             sliding_ctrl(torques);
             break;
+        
+        case 3:
+            Thread::Info("Sliding tracking\n");
+            if(first_update==true){
+                t0 = double(GetTime())/1000000000;
+                first_update==false;
+            }
+            sliding_track(torques);
+            break;
     }
     
 }
@@ -134,10 +155,12 @@ void proyecto22::SignalEvent(Event_t event) {
         break;
     case Event_t::Stopped:
         control_select->setEnabled(true);
+        first_update==true;
         behaviourMode=BehaviourMode_t::Default;
         break;
     case Event_t::EnteringFailSafeMode:
         control_select->setEnabled(true);
+        first_update==true;
         behaviourMode=BehaviourMode_t::Default;
         break;
     }
@@ -166,6 +189,26 @@ void proyecto22::ExtraCheckJoystick(void) {
     
 }
 
+AhrsData *proyecto22::GetReferenceOrientation(void) {
+    float tactual=double(GetTime())/1000000000-u_sliding->t0;
+    const AhrsData *refOrientation = GetDefaultReferenceOrientation();
+    
+    Quaternion refQuaternion;
+    Vector3Df refAngularRates;
+    
+    refOrientation->GetQuaternionAndAngularRates(refQuaternion, refAngularRates);
+        
+    Euler refAngles = refQuaternion.ToEuler();
+    
+    refAngles.yaw = a->Value()*sin(b->Value()*tactual);
+    
+    refAngularRates.z = a->Value()*b->Value()*cos(b->Value()*tactual);
+
+    customReferenceOrientation->SetQuaternionAndAngularRates(refAngles.ToQuaternion(),refAngularRates);
+
+    return customReferenceOrientation;
+}
+
 void proyecto22::Startproyecto22(void) {
     control_select->setEnabled(false);
     //ask UavStateMachine to enter in custom torques
@@ -186,6 +229,7 @@ void proyecto22::Startproyecto22(void) {
 void proyecto22::Stopproyecto22(void) {
     control_select->setEnabled(true);
     //just ask to enter fail safe mode
+    first_update==true;
     SetTorqueMode(TorqueMode_t::Default);
     SetThrustMode(ThrustMode_t::Default);
     behaviourMode=BehaviourMode_t::Default;
@@ -264,9 +308,9 @@ void proyecto22::nested_ctrl(Euler &torques){
     
     //Thread::Info("%f \t %f \t %f \t %f \n",u_nested->Output(0),u_nested->Output(1),u_nested->Output(2), u_nested->Output(3));
     
-//    torques.roll = u_nested->Output(0);
-//    torques.pitch = u_nested->Output(1);
-//    torques.yaw = u_nested->Output(2);
+    torques.roll = u_nested->Output(0);
+    torques.pitch = u_nested->Output(1);
+    torques.yaw = u_nested->Output(2);
     thrust = u_nested->Output(3);
     
     
@@ -308,8 +352,50 @@ void proyecto22::sliding_ctrl(Euler &torques){
     torques.roll = u_sliding->Output(0);
     torques.pitch = u_sliding->Output(1);
     torques.yaw = u_sliding->Output(2);
-    //thrust = u_sliding->Output(3);
-    thrust = ComputeDefaultThrust();
+    thrust = u_sliding->Output(3);
+    //thrust = ComputeDefaultThrust();
+    
+
+}
+
+void proyecto22::sliding_track(Euler &torques){
+    const AhrsData *refOrientation = GetReferenceOrientation();
+    Quaternion refQuaternion;
+    Vector3Df refAngularRates;
+    refOrientation->GetQuaternionAndAngularRates(refQuaternion, refAngularRates);
+
+    const AhrsData *currentOrientation = GetDefaultOrientation();
+    Quaternion currentQuaternion;
+    Vector3Df currentAngularRates;
+    currentOrientation->GetQuaternionAndAngularRates(currentQuaternion, currentAngularRates);
+    
+    //Vector3Df currentAngularSpeed = GetCurrentAngularSpeed();
+    
+    float refAltitude, refVerticalVelocity;
+    GetDefaultReferenceAltitude(refAltitude, refVerticalVelocity);
+    
+    float z, zp;
+    
+    AltitudeValues(z,zp);
+    
+    float ze = z - refAltitude;
+    
+    Vector3Df we = currentAngularRates - refAngularRates;
+    
+    
+    
+    u_sliding->SetValues(ze,zp,we.x,we.y,we.z,currentQuaternion.q0,currentQuaternion.q1,currentQuaternion.q2,currentQuaternion.q3,
+                            refQuaternion.q0,refQuaternion.q1, refQuaternion.q2,refQuaternion.q3);
+                         
+    u_sliding->Update(GetTime());
+    
+    //Thread::Info("%f\t %f\t %f\t %f\n",u_sliding->Output(0),u_sliding->Output(1), u_sliding->Output(2), u_sliding->Output(3));
+    
+    torques.roll = u_sliding->Output(0);
+    torques.pitch = u_sliding->Output(1);
+    torques.yaw = u_sliding->Output(2);
+    thrust = u_sliding->Output(3);
+    //thrust = ComputeDefaultThrust();
     
 
 }

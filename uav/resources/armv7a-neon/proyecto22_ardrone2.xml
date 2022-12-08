@@ -402,8 +402,11 @@
                         <DoubleSpinBox name="k10:" value="0"/>
                         <DoubleSpinBox name="k11:" value="612"/>
                         <DoubleSpinBox name="k12:" value="110"/>
-                        <DoubleSpinBox name="sat:" value="1"/>
-                        <DoubleSpinBox name="km:" value="6.45"/>
+                        <DoubleSpinBox name="sat roll:" value="0.8"/>
+                        <DoubleSpinBox name="sat pitch:" value="0.8"/>
+                        <DoubleSpinBox name="sat yaw:" value="0.8"/>
+                        <DoubleSpinBox name="sat thrust:" value="1"/>
+                        <DoubleSpinBox name="km:" value="6.450"/>
                         <DoubleSpinBox name="J11" value="0.002098"/>
                         <DoubleSpinBox name="J22" value="0.002102"/>
                         <DoubleSpinBox name="J33" value="0.004068"/>
@@ -420,16 +423,19 @@
                         <DoubleSpinBox name="k2:" value="10"/>
                         <DoubleSpinBox name="k3:" value="95"/>
                         <DoubleSpinBox name="k4:" value="144"/>
-                        <DoubleSpinBox name="a1:" value="0"/>
-                        <DoubleSpinBox name="b1:" value="0"/>
-                        <DoubleSpinBox name="c1:" value="0"/>
-                        <DoubleSpinBox name="d1:" value="0"/>
-                        <DoubleSpinBox name="a2:" value="0"/>
-                        <DoubleSpinBox name="b2:" value="0"/>
-                        <DoubleSpinBox name="c2:" value="0"/>
-                        <DoubleSpinBox name="d2:" value="0"/>
-                        <DoubleSpinBox name="sat:" value="1"/>
-                        <DoubleSpinBox name="km:" value="6.45"/>
+                        <DoubleSpinBox name="a1:" value="43"/>
+                        <DoubleSpinBox name="b1:" value="19"/>
+                        <DoubleSpinBox name="c1:" value="7"/>
+                        <DoubleSpinBox name="d1:" value="1"/>
+                        <DoubleSpinBox name="a2:" value="43"/>
+                        <DoubleSpinBox name="b2:" value="19"/>
+                        <DoubleSpinBox name="c2:" value="7"/>
+                        <DoubleSpinBox name="d2:" value="1"/>
+                        <DoubleSpinBox name="sat roll:" value="0.8"/>
+                        <DoubleSpinBox name="sat pitch:" value="0.8"/>
+                        <DoubleSpinBox name="sat yaw:" value="0.8"/>
+                        <DoubleSpinBox name="sat thrust:" value="1"/>
+                        <DoubleSpinBox name="km:" value="6.450"/>
                         <DoubleSpinBox name="J11" value="0.002098"/>
                         <DoubleSpinBox name="J22" value="0.002102"/>
                         <DoubleSpinBox name="J33" value="0.004068"/>
@@ -446,16 +452,23 @@
                         <DoubleSpinBox value="0" name="period, 0 for auto"/>
                         <DoubleSpinBox name="k1:" value="5"/>
                         <DoubleSpinBox name="k2:" value="10"/>
-                        <DoubleSpinBox name="gamma:" value="0.001"/>
-                        <DoubleSpinBox name="alpha:" value="5.000"/>
-                        <DoubleSpinBox name="k:" value="10.000"/>
-                        <DoubleSpinBox name="kd:" value="5.000"/>
-                        <DoubleSpinBox name="sat:" value="0.8"/>
-                        <DoubleSpinBox name="km:" value="6.45"/>
+                        <DoubleSpinBox name="gamma:" value="0.000010"/>
+                        <DoubleSpinBox name="alpha:" value="15"/>
+                        <DoubleSpinBox name="k:" value="40"/>
+                        <DoubleSpinBox name="Kd:" value="3"/>
+                        <DoubleSpinBox name="sat roll:" value="0.5"/>
+                        <DoubleSpinBox name="sat pitch:" value="0.5"/>
+                        <DoubleSpinBox name="sat yaw:" value="0.5"/>
+                        <DoubleSpinBox name="sat thrust:" value="1"/>
+                        <DoubleSpinBox name="km:" value="6.450"/>
                         <DoubleSpinBox name="m" value="0.436"/>
                         <DoubleSpinBox name="g" value="-9.81"/>
-                        <DoubleSpinBox name="Kd:" value="1.000"/>
-                        <DoubleSpinBox name="p:" value="3000.000"/>
+                        <DoubleSpinBox name="p:" value="3000"/>
+                    </GroupBox>
+                    <GroupBox name="Tracking">
+                        <Label name="a*sin(b*t)"/>
+                        <DoubleSpinBox name="a:" value="0.1"/>
+                        <DoubleSpinBox name="b:" value="1"/>
                     </GroupBox>
                 </Tab>
 

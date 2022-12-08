@@ -51,13 +51,13 @@ Sliding::Sliding(const LayoutPosition *position, string name): ControlLaw(positi
 
     GroupBox *reglages_groupbox = new GroupBox(position, name);
     T = new DoubleSpinBox(reglages_groupbox->NewRow(), "period, 0 for auto", " s", 0, 1, 0.01);
-    k1 = new DoubleSpinBox(reglages_groupbox->NewRow(), "k1:", -5000, 5000, 0.01, 3);
-    k2 = new DoubleSpinBox(reglages_groupbox->LastRowLastCol(), "k2:", -5000, 5000, 0.01, 3);
-    gamma = new DoubleSpinBox(reglages_groupbox->NewRow(), "gamma:", -5000, 5000, 0.01, 6);
-    p = new DoubleSpinBox(reglages_groupbox->LastRowLastCol(), "p:", -5000, 5000, 0.01, 3);
-    alpha = new DoubleSpinBox(reglages_groupbox->LastRowLastCol(), "alpha:", -5000, 5000, 0.01, 6);
-    k = new DoubleSpinBox(reglages_groupbox->LastRowLastCol(), "k:", -5000, 5000, 0.01, 6);
-    Kd = new DoubleSpinBox(reglages_groupbox->LastRowLastCol(), "Kd:", -5000, 5000, 0.01, 6);
+    k1 = new DoubleSpinBox(reglages_groupbox->NewRow(), "k1:", 0, 5000, 0.1, 3);
+    k2 = new DoubleSpinBox(reglages_groupbox->LastRowLastCol(), "k2:", 0, 5000, 0.1, 3);
+    gamma = new DoubleSpinBox(reglages_groupbox->NewRow(), "gamma:", -500, 500, 0.001, 6);
+    p = new DoubleSpinBox(reglages_groupbox->LastRowLastCol(), "p:", 0, 50000, 1, 3);
+    alpha = new DoubleSpinBox(reglages_groupbox->LastRowLastCol(), "alpha:", 0, 50000, 0.5, 3);
+    k = new DoubleSpinBox(reglages_groupbox->LastRowLastCol(), "k:", 0, 50000, 0.5, 3);
+    Kd = new DoubleSpinBox(reglages_groupbox->LastRowLastCol(), "Kd:", 0, 50000, 0.5, 3);
     sat_r = new DoubleSpinBox(reglages_groupbox->NewRow(), "sat roll:", 0, 1, 0.1);
     sat_p = new DoubleSpinBox(reglages_groupbox->LastRowLastCol(), "sat pitch:", 0, 1, 0.1);
     sat_y = new DoubleSpinBox(reglages_groupbox->LastRowLastCol(), "sat yaw:", 0, 1, 0.1);
@@ -66,7 +66,7 @@ Sliding::Sliding(const LayoutPosition *position, string name): ControlLaw(positi
     km = new DoubleSpinBox(reglages_groupbox->LastRowLastCol(), "km:", -10, 10, 0.01, 6);
     
     m = new DoubleSpinBox(reglages_groupbox->NewRow(),"m",0,2000,0.001,3);
-    g = new DoubleSpinBox(reglages_groupbox->LastRowLastCol(),"g",-10,10,0.001);
+    g = new DoubleSpinBox(reglages_groupbox->LastRowLastCol(),"g",-10,10,0.01,3);
     
     //GroupBox *c_fisicas = new GroupBox(position->NewRow(), "Constantes Fisicas");
     
@@ -179,7 +179,7 @@ void Sliding::UpdateFrom(const io_data *data) {
     
     Vector3Df nu_t0 = (0,0,1);
     
-    Vector3Df nud = nu_t0*exp(-k->Value()*(tactual));
+    Vector3Df nud = nu_t0*exp(-k->Value()*(abs(tactual)));
     
     Vector3Df nuq = nu-nud;
     
@@ -224,7 +224,8 @@ void Sliding::UpdateFrom(const io_data *data) {
     output->SetValue(3, 0, Tr);
     output->SetDataTime(data->DataTime());
     
-    previous_time=data->DataTime();
+    ProcessUpdate(output);
+    
 }
 
 float Sliding::Sat(float value, float borne) {

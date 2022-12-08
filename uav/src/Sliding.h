@@ -83,8 +83,6 @@ private:
     
     flair::core::Vector3Df sgnp, sgn;
     
-    flair::core::Time previous_time;
-    
     
 };
 } // end namespace filter

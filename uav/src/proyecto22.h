@@ -83,7 +83,7 @@ class proyecto22 : public flair::meta::UavStateMachine {
         flair::gui::TabWidget *tabWidget2;
         flair::gui::GroupBox *seg;
         flair::gui::DoubleSpinBox *a, *b;
-        flair::gui::Label *l;
+        flair::gui::Label *l, *l2;
         
         flair::core::AhrsData *customReferenceOrientation;
 };

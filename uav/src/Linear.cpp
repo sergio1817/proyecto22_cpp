@@ -47,18 +47,18 @@ Linear::Linear(const LayoutPosition *position, string name): ControlLaw(position
 
 
     GroupBox *reglages_groupbox = new GroupBox(position, name);
-    k1 = new DoubleSpinBox(reglages_groupbox->NewRow(), "k1:", -5000, 5000, 0.01, 3);
-    k2 = new DoubleSpinBox(reglages_groupbox->LastRowLastCol(), "k2:", -5000, 5000, 0.01, 3);
-    k3 = new DoubleSpinBox(reglages_groupbox->NewRow(), "k3:", -5000, 5000, 0.01, 3);
-    k4 = new DoubleSpinBox(reglages_groupbox->LastRowLastCol(), "k4:", -5000, 5000, 0.01, 3);
-    k5 = new DoubleSpinBox(reglages_groupbox->NewRow(), "k5:", -5000, 5000, 0.01, 3);
-    k6 = new DoubleSpinBox(reglages_groupbox->LastRowLastCol(), "k6:", -5000, 5000, 0.01, 3);
-    k7 = new DoubleSpinBox(reglages_groupbox->LastRowLastCol(), "k7:", -5000, 5000, 0.01, 3);
-    k8 = new DoubleSpinBox(reglages_groupbox->LastRowLastCol(), "k8:", -5000, 5000, 0.01, 3);
-    k9 = new DoubleSpinBox(reglages_groupbox->NewRow(), "k9:", -5000, 5000, 0.01, 3);
-    k10 = new DoubleSpinBox(reglages_groupbox->LastRowLastCol(), "k10:", -5000, 5000, 0.01, 3);
-    k11 = new DoubleSpinBox(reglages_groupbox->LastRowLastCol(), "k11:", -5000, 5000, 0.01, 3);
-    k12 = new DoubleSpinBox(reglages_groupbox->LastRowLastCol(), "k12:", -5000, 5000, 0.01, 3);
+    k1 = new DoubleSpinBox(reglages_groupbox->NewRow(), "k1:", -50000, 50000, 1, 3);
+    k2 = new DoubleSpinBox(reglages_groupbox->LastRowLastCol(), "k2:", -50000, 50000, 1, 3);
+    k3 = new DoubleSpinBox(reglages_groupbox->NewRow(), "k3:", -50000, 50000, 1, 3);
+    k4 = new DoubleSpinBox(reglages_groupbox->LastRowLastCol(), "k4:", -50000, 50000, 1, 3);
+    k5 = new DoubleSpinBox(reglages_groupbox->NewRow(), "k5:", -50000, 50000, 0.5, 3);
+    k6 = new DoubleSpinBox(reglages_groupbox->LastRowLastCol(), "k6:", -50000, 50000, 1, 3);
+    k7 = new DoubleSpinBox(reglages_groupbox->LastRowLastCol(), "k7:", -50000, 50000, 1, 3);
+    k8 = new DoubleSpinBox(reglages_groupbox->LastRowLastCol(), "k8:", -50000, 50000, 1, 3);
+    k9 = new DoubleSpinBox(reglages_groupbox->NewRow(), "k9:", -50000, 50000, 1, 3);
+    k10 = new DoubleSpinBox(reglages_groupbox->LastRowLastCol(), "k10:", -50000, 50000, 1, 3);
+    k11 = new DoubleSpinBox(reglages_groupbox->LastRowLastCol(), "k11:", -50000, 5000, 1, 3);
+    k12 = new DoubleSpinBox(reglages_groupbox->LastRowLastCol(), "k12:", -50000, 50000, 1, 3);
     sat_r = new DoubleSpinBox(reglages_groupbox->NewRow(), "sat roll:", 0, 1, 0.1);
     sat_p = new DoubleSpinBox(reglages_groupbox->LastRowLastCol(), "sat pitch:", 0, 1, 0.1);
     sat_y = new DoubleSpinBox(reglages_groupbox->LastRowLastCol(), "sat yaw:", 0, 1, 0.1);
@@ -69,15 +69,15 @@ Linear::Linear(const LayoutPosition *position, string name): ControlLaw(position
     
     //GroupBox *c_fisicas = new GroupBox(position->NewRow(), "Constantes Fisicas");
     
-    J11 = new DoubleSpinBox(reglages_groupbox->NewRow(),"J11",-2000,2000,0.001,6);
-    J22 = new DoubleSpinBox(reglages_groupbox->LastRowLastCol(),"J22",-2000,2000,0.001,6);
-    J33 = new DoubleSpinBox(reglages_groupbox->LastRowLastCol(),"J33",-2000,2000,0.001,6);
-    J12 = new DoubleSpinBox(reglages_groupbox->NewRow(),"J12",-2000,2000,0.001,6);
-    J13 = new DoubleSpinBox(reglages_groupbox->LastRowLastCol(),"J13",-2000,2000,0.001,6);
-    J23 = new DoubleSpinBox(reglages_groupbox->LastRowLastCol(),"J23",-2000,2000,0.001,6);
+    J11 = new DoubleSpinBox(reglages_groupbox->NewRow(),"J11",-2000,2000,0.001,12);
+    J22 = new DoubleSpinBox(reglages_groupbox->LastRowLastCol(),"J22",-2000,2000,0.001,12);
+    J33 = new DoubleSpinBox(reglages_groupbox->LastRowLastCol(),"J33",-2000,2000,0.001,12);
+    J12 = new DoubleSpinBox(reglages_groupbox->NewRow(),"J12",-2000,2000,0.001,12);
+    J13 = new DoubleSpinBox(reglages_groupbox->LastRowLastCol(),"J13",-2000,2000,0.001,12);
+    J23 = new DoubleSpinBox(reglages_groupbox->LastRowLastCol(),"J23",-2000,2000,0.001,12);
     
     m = new DoubleSpinBox(reglages_groupbox->NewRow(),"m",0,2000,0.001,3);
-    g = new DoubleSpinBox(reglages_groupbox->LastRowLastCol(),"g",-10,10,0.001);
+    g = new DoubleSpinBox(reglages_groupbox->LastRowLastCol(),"g",-10,10,0.001,3);
     
     
     J(0,0) = J11->Value();
@@ -233,6 +233,8 @@ void Linear::UpdateFrom(const io_data *data) {
     output->SetValue(2, 0, tau_yaw);
     output->SetValue(3, 0, Tr);
     output->SetDataTime(data->DataTime());
+    
+    ProcessUpdate(output);
 }
 
 

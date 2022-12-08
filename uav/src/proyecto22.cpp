@@ -121,25 +121,25 @@ void proyecto22::ComputeCustomTorques(Euler &torques) {
     switch(control_select->CurrentIndex()) {
         case 0:
             l2->SetText("Control: Linear");
-            //Thread::Info("Linear\n");
+            Thread::Info("Linear\n");
             linear_ctrl(torques);
             break;
         
         case 1:
             l2->SetText("Control: Nested");
-            //Thread::Info("Nested\n");
+            Thread::Info("Nested\n");
             nested_ctrl(torques);
             break;
             
         case 2:
             l2->SetText("Control: Sliding");
-            //Thread::Info("Sliding\n");
+            Thread::Info("Sliding\n");
             sliding_ctrl(torques);
             break;
         
         case 3:
             l2->SetText("Control: Sliding Tracking");
-            //Thread::Info("Sliding tracking\n");
+            Thread::Info("Sliding tracking\n");
             if(first_update==true){
                 t0 = double(GetTime())/1000000000;
                 first_update==false;
@@ -342,7 +342,7 @@ void proyecto22::sliding_ctrl(Euler &torques){
     Vector3Df currentAngularRates;
     currentOrientation->GetQuaternionAndAngularRates(currentQuaternion, currentAngularRates);
     
-    Vector3Df currentAngularSpeed = GetCurrentAngularSpeed();
+    //Vector3Df currentAngularSpeed = GetCurrentAngularSpeed();
     
     float refAltitude, refVerticalVelocity;
     GetDefaultReferenceAltitude(refAltitude, refVerticalVelocity);
@@ -353,7 +353,7 @@ void proyecto22::sliding_ctrl(Euler &torques){
     
     float ze = z - refAltitude;
     
-    Vector3Df we = currentAngularRates - currentAngularSpeed;
+    Vector3Df we = currentAngularRates - refAngularRates;
     
     u_sliding->SetValues(ze,zp,we.x,we.y,we.z,currentQuaternion.q0,currentQuaternion.q1,currentQuaternion.q2,currentQuaternion.q3,
                             refQuaternion.q0,refQuaternion.q1, refQuaternion.q2,refQuaternion.q3);

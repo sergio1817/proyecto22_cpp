@@ -17,8 +17,8 @@
     <SpinBox value="90" name="yaw (deg):"/>
    <Vector3DSpinBox name="position" value_x="-1.5" value_y="0" value_z="-1"/></Tab>
    <Tab name="model">
-    <DoubleSpinBox value="1.2" name="mass (kg):"/>
-    <DoubleSpinBox value="0.2" name="arm length (m):"/>
+    <DoubleSpinBox value="0.436" name="mass (kg):"/>
+    <DoubleSpinBox value="0.1745" name="arm length (m):"/>
     <DoubleSpinBox value="0.001" name="k_mot:"/>
     <DoubleSpinBox value="0.001" name="c_mot:"/>
     <DoubleSpinBox value="0.01" name="f_air_vert:"/>

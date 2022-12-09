@@ -40,7 +40,7 @@ scp timmy:~/bin/arm/proyecto22_ardrone2.xml  /home/parrot/Documentos
 
 
 - Clonar
-cd $FLMAIR_ROOT/my_src
+cd $FLAIR_ROOT/my_src
 $FLAIR_ROOT/flair-src/scripts/clone_demo.sh $FLAIR_ROOT/flair-src/demos/CircleFollower/ MyApp
 
 - Compilar

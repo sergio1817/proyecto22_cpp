@@ -190,11 +190,11 @@ void Linear::UpdateFrom(const io_data *data) {
     
     Eigen::Vector3d etap = Wi*w;
     
-    double tau_th_t = K1.transpose()*X1;
+    float tau_th_t = K1.transpose()*X1;
     
-    double tau_phi_t = K2.transpose()*X2;
+    float tau_phi_t = K2.transpose()*X2;
     
-    double tau_psi_t = -k3->Value()*psip - k4->Value()*psi;
+    float tau_psi_t = -k3->Value()*psip - k4->Value()*psi;
     
     Eigen::Vector3d taub(tau_phi_t, tau_th_t, tau_psi_t);
     
@@ -206,13 +206,13 @@ void Linear::UpdateFrom(const io_data *data) {
     
     T = m->Value()*(k1->Value()*zp + k2->Value()*ze + g->Value());
     
-    tau_roll = (double)tau(0)/km->Value();
+    tau_roll = (float)tau(0)/km->Value();
     
-    tau_pitch = (double)tau(1)/km->Value();
+    tau_pitch = (float)tau(1)/km->Value();
     
-    tau_yaw = -(double)tau(2)/km->Value();
+    tau_yaw = -(float)tau(2)/km->Value();
     
-    Tr = (double)T/km->Value();
+    Tr = (float)T/km->Value();
     
 
     tau_roll = Sat(tau_roll,sat_r->Value());

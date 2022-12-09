@@ -2,41 +2,33 @@
 <!DOCTYPE remote_ui_xml>
 <root name="interface">
     <TabWidget name="Main_TabWidget">
-        <Tab name="Dualshock3">
-            <TabWidget name="Dualshock3">
-                <Tab name="Reglages">
-                    <GroupBox name="Dualshock3">
-                        <SpinBox value="10" name="dead zone:"/>
-                        <Label name="batterie"/>
-                    </GroupBox>
-                    <GroupBox name="consignes joy">
-                        <DoubleSpinBox value="-20" name="debattement roll"/>
-                        <DoubleSpinBox value="-20" name="debattement pitch"/>
-                        <DoubleSpinBox value="90" name="debattement wz"/>
-                        <DoubleSpinBox value="-0.7" name="debattement dz"/>
-                        <DoubleSpinBox value="0" name="trim"/>
-                        <Label name="trim roll"/>
-                        <PushButton value="0" name="reset roll trim"/>
-                        <Label name="trim pitch"/>
-                        <PushButton value="0" name="reset pitch trim"/>
-                        <DoubleSpinBox name="debattement wz" value="90"/>
-                    </GroupBox>
-                </Tab>
-                <Tab name="Mesures">
-                    <DataPlot1D name="roll">
-                        <Setup period="100" enabled="1"/>
-                    </DataPlot1D>
-                    <DataPlot1D name="pitch">
-                        <Setup period="100" enabled="1"/>
-                    </DataPlot1D>
-                    <DataPlot1D name="yaw">
-                        <Setup period="100" enabled="1"/>
-                    </DataPlot1D>
-                    <DataPlot1D name="gaz">
-                        <Setup period="100" enabled="1"/>
-                    </DataPlot1D>
-                </Tab>
-            </TabWidget>
+
+        <Tab name="uav">
+            <GridLayout name="buttons">
+                <PushButton value="0" name="kill"/>
+                <PushButton value="0" name="start_log"/>
+                <PushButton value="0" name="stop_log"/>
+                <PushButton value="0" name="take_off"/>
+                <PushButton value="0" name="land"/>
+                <PushButton value="0" name="start_circle"/>
+                <PushButton value="0" name="stop_circle"/>
+                <PushButton name="position hold"/>
+                <GroupBox name="Controles">
+                    <ComboBox name="select control" value="2"/>
+                    <PushButton name="start control"/>
+                    <PushButton name="stop control"/>
+                    <Label name="Control selec"/>
+                </GroupBox>
+            </GridLayout>
+            <GroupBox name="takeoff/landing">
+                <DoubleSpinBox value="1" name="desired takeoff altitude"/>
+                <DoubleSpinBox value="0" name="desired landing altitude"/>
+            </GroupBox>
+            <GroupBox name="alt cons">
+                <DoubleSpinBox value="0" name="period, 0 for auto:"/>
+                <DoubleSpinBox value="0.5" name="velocity max (absolute):"/>
+                <DoubleSpinBox value="0.2" name="acceleration (absolute):"/>
+            </GroupBox>
         </Tab>
 
         <Tab name="motors">
@@ -213,6 +205,52 @@
             </TabWidget>
         </Tab>
 
+        <Tab name="simu_cam_h">
+            <TabWidget name="simu_cam_h">
+                <Tab name="Setup">
+                    <GroupBox name="simu_cam_h"/>
+                    <GridLayout name="setup"/>
+                </Tab>
+            </TabWidget>
+        </Tab>
+
+        <Tab name="Dualshock3">
+            <TabWidget name="Dualshock3">
+                <Tab name="Reglages">
+                    <GroupBox name="Dualshock3">
+                        <SpinBox value="10" name="dead zone:"/>
+                        <Label name="batterie"/>
+                    </GroupBox>
+                    <GroupBox name="consignes joy">
+                        <DoubleSpinBox value="-20" name="debattement roll"/>
+                        <DoubleSpinBox value="-20" name="debattement pitch"/>
+                        <DoubleSpinBox value="90" name="debattement wz"/>
+                        <DoubleSpinBox value="-0.7" name="debattement dz"/>
+                        <DoubleSpinBox value="0" name="trim"/>
+                        <Label name="trim roll"/>
+                        <PushButton value="0" name="reset roll trim"/>
+                        <Label name="trim pitch"/>
+                        <PushButton value="0" name="reset pitch trim"/>
+                        <DoubleSpinBox name="debattement wz" value="90"/>
+                    </GroupBox>
+                </Tab>
+                <Tab name="Mesures">
+                    <DataPlot1D name="roll">
+                        <Setup period="100" enabled="1"/>
+                    </DataPlot1D>
+                    <DataPlot1D name="pitch">
+                        <Setup period="100" enabled="1"/>
+                    </DataPlot1D>
+                    <DataPlot1D name="yaw">
+                        <Setup period="100" enabled="1"/>
+                    </DataPlot1D>
+                    <DataPlot1D name="gaz">
+                        <Setup period="100" enabled="1"/>
+                    </DataPlot1D>
+                </Tab>
+            </TabWidget>
+        </Tab>
+
         <Tab name="vrpn">
             <TabWidget name="vrpn">
                 <Tab name="Reglages">
@@ -296,33 +334,6 @@
                     </DataPlot2D>
                 </Tab>
             </TabWidget>
-        </Tab>
-
-        <Tab name="uav">
-            <GridLayout name="buttons">
-                <PushButton value="0" name="kill"/>
-                <PushButton value="0" name="start_log"/>
-                <PushButton value="0" name="stop_log"/>
-                <PushButton value="0" name="take_off"/>
-                <PushButton value="0" name="land"/>
-                <PushButton value="0" name="start_circle"/>
-                <PushButton value="0" name="stop_circle"/>
-                <PushButton name="position hold"/>
-                <GroupBox name="Controles">
-                    <ComboBox name="select control" value="2"/>
-                    <PushButton name="start control"/>
-                    <PushButton name="stop control"/>
-                </GroupBox>
-            </GridLayout>
-            <GroupBox name="takeoff/landing">
-                <DoubleSpinBox value="1" name="desired takeoff altitude"/>
-                <DoubleSpinBox value="0" name="desired landing altitude"/>
-            </GroupBox>
-            <GroupBox name="alt cons">
-                <DoubleSpinBox value="0" name="period, 0 for auto:"/>
-                <DoubleSpinBox value="0.5" name="velocity max (absolute):"/>
-                <DoubleSpinBox value="0.2" name="acceleration (absolute):"/>
-            </GroupBox>
         </Tab>
 
         <Tab name="control laws">
@@ -420,7 +431,7 @@
                         <DoubleSpinBox name="sat pitch:" value="0.8"/>
                         <DoubleSpinBox name="sat yaw:" value="0.8"/>
                         <DoubleSpinBox name="sat thrust:" value="1"/>
-                        <DoubleSpinBox name="km:" value="6.450"/>
+                        <DoubleSpinBox name="km:" value="6.45"/>
                         <DoubleSpinBox name="J11" value="0.002098"/>
                         <DoubleSpinBox name="J22" value="0.002102"/>
                         <DoubleSpinBox name="J33" value="0.004068"/>
@@ -449,7 +460,7 @@
                         <DoubleSpinBox name="sat pitch:" value="0.8"/>
                         <DoubleSpinBox name="sat yaw:" value="0.8"/>
                         <DoubleSpinBox name="sat thrust:" value="1"/>
-                        <DoubleSpinBox name="km:" value="6.450"/>
+                        <DoubleSpinBox name="km:" value="6.45"/>
                         <DoubleSpinBox name="J11" value="0.002098"/>
                         <DoubleSpinBox name="J22" value="0.002102"/>
                         <DoubleSpinBox name="J33" value="0.004068"/>
@@ -474,16 +485,16 @@
                         <DoubleSpinBox name="sat pitch:" value="0.8"/>
                         <DoubleSpinBox name="sat yaw:" value="0.8"/>
                         <DoubleSpinBox name="sat thrust:" value="1"/>
-                        <DoubleSpinBox name="km:" value="6.450"/>
+                        <DoubleSpinBox name="km:" value="6.45"/>
                         <DoubleSpinBox name="m" value="0.436"/>
                         <DoubleSpinBox name="g" value="-9.81"/>
                         <DoubleSpinBox name="p:" value="3000"/>
-                    </GroupBox>
+                    <DoubleSpinBox name="Kd:" value="1.000"/></GroupBox>
                     <GroupBox name="Tracking">
                         <Label name="a*sin(b*t)"/>
                         <DoubleSpinBox name="a:" value="0.5"/>
                         <DoubleSpinBox name="b:" value="1"/>
-                    </GroupBox>
+                    <Label name="funcion"/></GroupBox>
                 </Tab>
 
                 <Tab name="Graficas Linear">
@@ -531,20 +542,14 @@
             </TabWidget>
         </Tab>
 
-        <Tab name="simu_cam_h">
-            <TabWidget name="simu_cam_h">
-                <Tab name="Setup">
-                    <GroupBox name="simu_cam_h"/>
-                    <GridLayout name="setup"/>
-                </Tab>
-            </TabWidget>
-        </Tab>
-
     </TabWidget>
+
     <TabWidget name="App_TabWidget">
         <Tab name="x4_0">
             <PushButton name="save config on target" value="1"/>
         </Tab>
     </TabWidget>
+
     <PushButton name="save config on target (x4_0)" value="1"/>
+
 </root>

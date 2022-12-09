@@ -103,8 +103,11 @@ proyecto22::proyecto22(TargetController *controller): UavStateMachine(controller
     
     uav->GetAhrs()->AddPlot(customReferenceOrientation,DataPlot::Yellow);
     AddDataToControlLawLog(customReferenceOrientation);
-    first_update = true;
-
+    //first_update = true;
+    
+    getFrameworkManager()->AddDeviceToLog(u_linear);
+    getFrameworkManager()->AddDeviceToLog(u_nested);
+    getFrameworkManager()->AddDeviceToLog(u_sliding);
     AddDeviceToControlLawLog(u_linear);
     AddDeviceToControlLawLog(u_nested);
     AddDeviceToControlLawLog(u_sliding);
@@ -118,32 +121,33 @@ proyecto22::~proyecto22() {
 //this method is called by UavStateMachine::Run (main loop) when TorqueMode is Custom
 void proyecto22::ComputeCustomTorques(Euler &torques) {
     ComputeDefaultTorques(torques);
+    thrust = ComputeDefaultThrust();
     switch(control_select->CurrentIndex()) {
         case 0:
             l2->SetText("Control: Linear");
-            Thread::Info("Linear\n");
+            //Thread::Info("Linear\n");
             linear_ctrl(torques);
             break;
         
         case 1:
             l2->SetText("Control: Nested");
-            Thread::Info("Nested\n");
+            //Thread::Info("Nested\n");
             nested_ctrl(torques);
             break;
             
         case 2:
             l2->SetText("Control: Sliding");
-            Thread::Info("Sliding\n");
+            //Thread::Info("Sliding\n");
             sliding_ctrl(torques);
             break;
         
         case 3:
             l2->SetText("Control: Sliding Tracking");
-            Thread::Info("Sliding tracking\n");
-            if(first_update==true){
-                t0 = double(GetTime())/1000000000;
-                first_update==false;
-            }
+            //Thread::Info("Sliding tracking\n");
+//            if(first_update==true){
+//                t0 = double(GetTime())/1000000000;
+//                first_update==false;
+//            }
             sliding_track(torques);
             break;
     }
@@ -164,13 +168,13 @@ void proyecto22::SignalEvent(Event_t event) {
     case Event_t::Stopped:
         l2->SetText("Control: off");
         control_select->setEnabled(true);
-        first_update==true;
+        //first_update==true;
         behaviourMode=BehaviourMode_t::Default;
         break;
     case Event_t::EnteringFailSafeMode:
         l2->SetText("Control: off");
         control_select->setEnabled(true);
-        first_update==true;
+        //first_update==true;
         behaviourMode=BehaviourMode_t::Default;
         break;
     }
@@ -200,8 +204,8 @@ void proyecto22::ExtraCheckJoystick(void) {
 }
 
 AhrsData *proyecto22::GetReferenceOrientation(void) {
-    float tactual=double(GetTime())/1000000000-t0;
-    Thread::Info("%f\n",tactual);
+    float tactual=double(GetTime())/1000000000-u_sliding->t0;
+    //Thread::Info("%f\n",tactual);
     const AhrsData *refOrientation = GetDefaultReferenceOrientation();
     
     Quaternion refQuaternion;
@@ -242,7 +246,7 @@ void proyecto22::Stopproyecto22(void) {
     control_select->setEnabled(true);
     //just ask to enter fail safe mode
     l2->SetText("Control: off");
-    first_update==true;
+    //first_update==true;
     SetTorqueMode(TorqueMode_t::Default);
     SetThrustMode(ThrustMode_t::Default);
     behaviourMode=BehaviourMode_t::Default;

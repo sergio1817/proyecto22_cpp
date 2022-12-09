@@ -73,9 +73,9 @@ class proyecto22 : public flair::meta::UavStateMachine {
         flair::filter::Nested *u_nested;
         flair::filter::Sliding *u_sliding;
         
-        bool first_update;
+        //bool first_update;
 
-        float thrust, t0;
+        float thrust;
 
         flair::gui::PushButton *start_prueba1,*stop_prueba1;
         flair::gui::ComboBox *control_select;   

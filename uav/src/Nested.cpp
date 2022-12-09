@@ -184,11 +184,11 @@ void Nested::UpdateFrom(const io_data *data) {
     
     Eigen::Vector3d etap = Wi*w;
     
-    double tau_th_t = Sat(thp + Sat(th + thp + Sat(2*th + thp - (1/g->Value())*xp + Sat(3*th + thp - (3/g->Value())*xp -(1/g->Value())*x ,d1->Value()) ,c1->Value()) ,b1->Value()) ,a1->Value());
+    float tau_th_t = Sat(thp + Sat(th + thp + Sat(2*th + thp - (1/g->Value())*xp + Sat(3*th + thp - (3/g->Value())*xp -(1/g->Value())*x ,d1->Value()) ,c1->Value()) ,b1->Value()) ,a1->Value());
     
-    double tau_phi_t = Sat(phip + Sat(phi + phip + Sat(2*phi + phip - (1/g->Value())*yp + Sat(3*phi + phip - (3/g->Value())*yp -(1/g->Value())*y ,d2->Value()) ,c2->Value()) ,b2->Value()) ,a2->Value());;
+    float tau_phi_t = Sat(phip + Sat(phi + phip + Sat(2*phi + phip - (1/g->Value())*yp + Sat(3*phi + phip - (3/g->Value())*yp -(1/g->Value())*y ,d2->Value()) ,c2->Value()) ,b2->Value()) ,a2->Value());;
     
-    double tau_psi_t = -k3->Value()*psip - k4->Value()*psi;
+    float tau_psi_t = -k3->Value()*psip - k4->Value()*psi;
     
     Eigen::Vector3d taub(tau_phi_t, tau_th_t, tau_psi_t);
     
@@ -200,13 +200,13 @@ void Nested::UpdateFrom(const io_data *data) {
     
     T = (m->Value()*(k1->Value()*zp + k2->Value()*ze + g->Value()))/(cos(th)*cos(phi));
     
-    tau_roll = (double)tau(0)/km->Value();
+    tau_roll = (float)tau(0)/km->Value();
     
-    tau_pitch = (double)tau(1)/km->Value();
+    tau_pitch = (float)tau(1)/km->Value();
     
-    tau_yaw = -(double)tau(2)/km->Value();
+    tau_yaw = -(float)tau(2)/km->Value();
     
-    Tr = (double)T/km->Value();
+    Tr = (float)T/km->Value();
     
     tau_roll = Sat(tau_roll,sat_r->Value());
     tau_pitch = Sat(tau_pitch,sat_p->Value());

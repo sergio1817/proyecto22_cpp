@@ -177,7 +177,7 @@ void Sliding::UpdateFrom(const io_data *data) {
     
     Vector3Df nu = we + alpha->Value()*QdTqe3;
     
-    Vector3Df nu_t0 = (0,0,1);
+    Vector3Df nu_t0 = 0.01*(0,0,1);
     
     Vector3Df nud = nu_t0*exp(-k->Value()*(abs(tactual)));
     
@@ -197,13 +197,13 @@ void Sliding::UpdateFrom(const io_data *data) {
     
     Trs =  (m->Value()*(k1->Value()*zp + k2->Value()*ze + g->Value()))/(cos(currentAngles.pitch)*cos(currentAngles.roll));
     
-    tau_roll = (double)tau.x;
+    tau_roll = (float)tau.x;
     
-    tau_pitch = (double)tau.y;
+    tau_pitch = (float)tau.y;
     
-    tau_yaw = (double)tau.z;
+    tau_yaw = (float)tau.z;
     
-    Tr = (double)Trs/km->Value();
+    Tr = (float)Trs/km->Value();
     
     tau_roll = Sat(tau_roll,sat_r->Value());
     tau_pitch = Sat(tau_pitch,sat_p->Value());

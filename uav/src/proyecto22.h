@@ -31,7 +31,6 @@ namespace flair {
     }
     namespace filter {
         class ControlLaw;
-        class TrajectoryGenerator1D;
         class Linear;
         class Nested;
         class Sliding;

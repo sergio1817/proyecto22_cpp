@@ -150,7 +150,7 @@ void Sliding::UpdateFrom(const io_data *data) {
     const Matrix* input = dynamic_cast<const Matrix*>(data);
   
     if (!input) {
-        Warn("casting %s to Matrix failed\n",data->ObjectName().c_str());
+        Warn("casting %s to Matrix failed\n",data->ObjectName().c_str(),TIME_INFINITE);
         return;
     }
 

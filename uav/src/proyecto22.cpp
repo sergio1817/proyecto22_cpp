@@ -103,6 +103,7 @@ proyecto22::proyecto22(TargetController *controller): UavStateMachine(controller
     
     uav->GetAhrs()->AddPlot(customReferenceOrientation,DataPlot::Yellow);
     AddDataToControlLawLog(customReferenceOrientation);
+    //AddDataToControlLawLog(refAnglesC);
     //first_update = true;
     
     getFrameworkManager()->AddDeviceToLog(u_linear);
@@ -124,30 +125,18 @@ void proyecto22::ComputeCustomTorques(Euler &torques) {
     thrust = ComputeDefaultThrust();
     switch(control_select->CurrentIndex()) {
         case 0:
-            l2->SetText("Control: Linear");
-            //Thread::Info("Linear\n");
             linear_ctrl(torques);
             break;
         
         case 1:
-            l2->SetText("Control: Nested");
-            //Thread::Info("Nested\n");
             nested_ctrl(torques);
             break;
             
         case 2:
-            l2->SetText("Control: Sliding");
-            //Thread::Info("Sliding\n");
             sliding_ctrl(torques);
             break;
         
         case 3:
-            l2->SetText("Control: Sliding Tracking");
-            //Thread::Info("Sliding tracking\n");
-//            if(first_update==true){
-//                t0 = double(GetTime())/1000000000;
-//                first_update==false;
-//            }
             sliding_track(torques);
             break;
     }
@@ -213,13 +202,13 @@ AhrsData *proyecto22::GetReferenceOrientation(void) {
     
     refOrientation->GetQuaternionAndAngularRates(refQuaternion, refAngularRates);
         
-    Euler refAngles = refQuaternion.ToEuler();
+    Euler refAnglesC = refQuaternion.ToEuler();
     
-    refAngles.yaw = a->Value()*sin(b->Value()*tactual);
+    refAnglesC.yaw = a->Value()*sin(b->Value()*abs(tactual));
     
-    refAngularRates.z = a->Value()*b->Value()*cos(b->Value()*tactual);
+    refAngularRates.z = a->Value()*b->Value()*cos(b->Value()*abs(tactual));
 
-    customReferenceOrientation->SetQuaternionAndAngularRates(refAngles.ToQuaternion(),refAngularRates);
+    customReferenceOrientation->SetQuaternionAndAngularRates(refAnglesC.ToQuaternion(),refAngularRates);
 
     return customReferenceOrientation;
 }
@@ -237,6 +226,31 @@ void proyecto22::Startproyecto22(void) {
         l2->SetText("Control: err");
         control_select->setEnabled(true);
         return;
+    }
+    switch(control_select->CurrentIndex()) {
+        case 0:
+            l2->SetText("Control: Linear");
+            Thread::Info("Linear\n");
+            break;
+        
+        case 1:
+            l2->SetText("Control: Nested");
+            Thread::Info("Nested\n");
+            break;
+            
+        case 2:
+            l2->SetText("Control: Sliding");
+            Thread::Info("Sliding\n");
+            break;
+        
+        case 3:
+            l2->SetText("Control: Sliding Tracking");
+            Thread::Info("Sliding tracking\n");
+//            if(first_update==true){
+//                t0 = double(GetTime())/1000000000;
+//                first_update==false;
+//            }
+            break;
     }
 
     behaviourMode=BehaviourMode_t::control;

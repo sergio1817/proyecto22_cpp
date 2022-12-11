@@ -50,10 +50,10 @@ Sliding::Sliding(const LayoutPosition *position, string name): ControlLaw(positi
 
 
     GroupBox *reglages_groupbox = new GroupBox(position, name);
-    T = new DoubleSpinBox(reglages_groupbox->NewRow(), "period, 0 for auto", " s", 0, 1, 0.01);
+    T = new DoubleSpinBox(reglages_groupbox->NewRow(), "period, 0 for auto", " s", 0, 1, 0.001,6);
     k1 = new DoubleSpinBox(reglages_groupbox->NewRow(), "k1:", 0, 5000, 0.1, 3);
     k2 = new DoubleSpinBox(reglages_groupbox->LastRowLastCol(), "k2:", 0, 5000, 0.1, 3);
-    gamma = new DoubleSpinBox(reglages_groupbox->NewRow(), "gamma:", -500, 500, 0.001, 6);
+    gamma = new DoubleSpinBox(reglages_groupbox->NewRow(), "gamma:", -500, 500, 0.0001, 12);
     p = new DoubleSpinBox(reglages_groupbox->LastRowLastCol(), "p:", 0, 50000, 1, 3);
     alpha = new DoubleSpinBox(reglages_groupbox->LastRowLastCol(), "alpha:", 0, 50000, 0.5, 3);
     k = new DoubleSpinBox(reglages_groupbox->LastRowLastCol(), "k:", 0, 50000, 0.5, 3);
@@ -197,11 +197,11 @@ void Sliding::UpdateFrom(const io_data *data) {
     
     Trs =  (m->Value()*(k1->Value()*zp + k2->Value()*ze + g->Value()))/(cos(currentAngles.pitch)*cos(currentAngles.roll));
     
-    tau_roll = (float)tau.x;
+    tau_roll = (float)tau.x/km->Value();
     
-    tau_pitch = (float)tau.y;
+    tau_pitch = (float)tau.y/km->Value();
     
-    tau_yaw = (float)tau.z;
+    tau_yaw = (float)tau.z/km->Value();
     
     Tr = (float)Trs/km->Value();
     
